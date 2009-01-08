@@ -1,0 +1,4 @@
+*.svn
+log/*
+tmp/*
+*.DS_Store
