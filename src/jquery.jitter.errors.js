@@ -1,0 +1,5 @@
+(function($) {
+  $.jitter.errors = {
+    
+  };
+})(jQuery);
