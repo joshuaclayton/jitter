@@ -2,22 +2,10 @@
   $.jitter = function(settings) {
     var options = $.extend({}, $.jitter.defaults, settings);
     options.currentFeed = $.jitter.feeds[options.feed];
-    
-    try {
-      if(options.currentFeed == $.jitter.feeds.search && !options.query) { throw($.jitter.errors.invalidSearchRequest); }
-      if(options.currentFeed == $.jitter.feeds.groupTimeline && (!options.users.length || !options.users.groupName)) { throw($.jitter.errors.invalidGroupTimelineRequest); }
-      if(options.currentFeed == $.jitter.feeds.userTimeline && !options.username) { throw($.jitter.errors.invalidUserTimelineRequest); }
-    } catch(error) {
-      if(options.onError && typeof(options.onError) == "function"){ 
-        options.onError(error); 
-      } else {
-        alert("Error: " + error.name + "\nMessage: " + error.message);
-      }
-    }
+    var updateTweets = function() {};
     
     // wrapper for all private instance variables
-    var jitter = {};
-    jitter.tweets = [];
+    var jitter = {tweets: []};
 
     // public object
     var public = {};
@@ -44,6 +32,28 @@
       return 1000 * options.refreshRate;
     };
     
+    var handleError = function(error) {
+      if(options.onError && typeof(options.onError) == "function"){ 
+        options.onError(error);
+      } else {
+        alert("Error: " + error.name + "\nMessage: " + error.message);
+      }
+    };
+    
+    var setupTimer = function() {
+      jitter.timer = $.timer(calculateRefreshRate(), function(t) {
+        updateTweets();
+      });
+
+      public.stop = function() {
+        jitter.timer.stop();
+      };
+
+      public.start = function() {
+        jitter.timer.reset(calculateRefreshRate());
+      };
+    };
+    
     // public instance methods
     var feedClass = function() {
       var feedClassName = options.currentFeed.name;
@@ -61,7 +71,7 @@
       return feedTitleName;
     };
 
-    var updateTweets = function() {
+    updateTweets = function() {
       $.ajax({
         type: "GET",
         url: buildURL(options.currentFeed),
@@ -91,19 +101,17 @@
     public.feedClass = feedClass;
     public.feedTitle = feedTitle;
     
-    // timer setup 
-    jitter.timer = $.timer(calculateRefreshRate(), function(t) {
-      updateTweets();
-    });
-
-    public.stop = function() {
-      jitter.timer.stop();
-    };
+    try {
+      if(options.currentFeed == $.jitter.feeds.search && !options.query) { throw($.jitter.errors.invalidSearchRequest); }
+      if(options.currentFeed == $.jitter.feeds.groupTimeline && (!options.users.length || !options.users.groupName)) { throw($.jitter.errors.invalidGroupTimelineRequest); }
+      if(options.currentFeed == $.jitter.feeds.userTimeline && !options.username) { throw($.jitter.errors.invalidUserTimelineRequest); }
+    } catch(error) {
+      handleError(error);
+      return;
+    }
     
-    public.start = function() {
-      jitter.timer.reset(calculateRefreshRate());
-    };
-
+    setupTimer();
+    
     updateTweets();
 
     return public;
