@@ -93,8 +93,8 @@
     };
     
     public.start = function() {
-      jitter.timer.reset(options.refreshRate);
-    }
+      jitter.timer.reset(1000 * options.refreshRate);
+    };
 
     updateTweets();
 
