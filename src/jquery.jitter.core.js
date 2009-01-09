@@ -41,17 +41,19 @@
     };
     
     var setupTimer = function() {
-      jitter.timer = $.timer(calculateRefreshRate(), function(t) {
-        updateTweets();
-      });
+      if(!jitter.timer) {
+        jitter.timer = $.timer(calculateRefreshRate(), function(t) {
+          updateTweets();
+        });
 
-      public.stop = function() {
-        jitter.timer.stop();
-      };
+        public.stop = function() {
+          jitter.timer.stop();
+        };
 
-      public.start = function() {
-        jitter.timer.reset(calculateRefreshRate());
-      };
+        public.start = function() {
+          jitter.timer.reset(calculateRefreshRate());
+        };
+      }
     };
     
     // public instance methods
