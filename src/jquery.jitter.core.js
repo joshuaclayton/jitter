@@ -8,7 +8,11 @@
       if(options.currentFeed == $.jitter.feeds.groupTimeline && (!options.users.length || !options.users.groupName)) { throw($.jitter.errors.invalidGroupTimelineRequest); }
       if(options.currentFeed == $.jitter.feeds.userTimeline && !options.username) { throw($.jitter.errors.invalidUserTimelineRequest); }
     } catch(error) {
-      alert("Error: " + error.name + "\nMessage: " + error.message);
+      if(options.onError && typeof(options.onError) == "function"){ 
+        options.onError(error); 
+      } else {
+        alert("Error: " + error.name + "\nMessage: " + error.message);
+      }
     }
     
     // wrapper for all private instance variables

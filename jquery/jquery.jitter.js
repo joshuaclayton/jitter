@@ -1,24 +1,4 @@
 (function($) {
-  $.timer = function (interval, callback) {
-    interval = interval || 100;
-    if (!callback) { return false; }
-    var _timer = function (i, c) {
-      var public = {};
-      public.stop = function () { clearInterval(public.id); };
-      public.internalCallback = function () { c(public); };
-      public.reset = function (resetInterval) {
-        if (public.id) { clearInterval(public.id); }
-        resetInterval = resetInterval || public.interval;
-        public.id = setInterval(public.internalCallback, resetInterval);
-      };
-      public.interval = i;
-      public.id = setInterval(public.internalCallback, public.interval);
-      return public;
-    };
-    return _timer(interval, callback);
-  };
-})(jQuery);
-(function($) {
   $.jitter = function(settings) {
     var options = $.extend({}, $.jitter.defaults, settings);
     options.currentFeed = $.jitter.feeds[options.feed];
@@ -28,7 +8,11 @@
       if(options.currentFeed == $.jitter.feeds.groupTimeline && (!options.users.length || !options.users.groupName)) { throw($.jitter.errors.invalidGroupTimelineRequest); }
       if(options.currentFeed == $.jitter.feeds.userTimeline && !options.username) { throw($.jitter.errors.invalidUserTimelineRequest); }
     } catch(error) {
-      alert("Error: " + error.name + "\nMessage: " + error.message);
+      if(options.onError && typeof(options.onError) == "function"){ 
+        options.onError(error); 
+      } else {
+        alert("Error: " + error.name + "\nMessage: " + error.message);
+      }
     }
     
     // wrapper for all private instance variables
