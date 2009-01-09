@@ -35,7 +35,11 @@
       url += "?" + $.param(buildRequestParams());
       return url;
     };
-
+    
+    var calculateRefreshRate = function() {
+      return 1000 * options.refreshRate;
+    };
+    
     // public instance methods
     var feedClass = function() {
       var feedClassName = options.currentFeed.name;
@@ -69,7 +73,7 @@
           if(updatingExistingTweets) { data = data.reverse(); }                                     // reverse dataset for unshift
 
           $.each(data, function(index, item) {
-            updatingExistingTweets ? jitter.tweets.unshift(item) : jitter.tweets.push(item);
+            var modify = updatingExistingTweets ? jitter.tweets.unshift(item) : jitter.tweets.push(item);
           });
         }
       });
@@ -84,7 +88,7 @@
     public.feedTitle = feedTitle;
     
     // timer setup 
-    jitter.timer = $.timer(1000 * options.refreshRate, function(t) {
+    jitter.timer = $.timer(calculateRefreshRate(), function(t) {
       updateTweets();
     });
 
@@ -93,7 +97,7 @@
     };
     
     public.start = function() {
-      jitter.timer.reset(1000 * options.refreshRate);
+      jitter.timer.reset(calculateRefreshRate());
     };
 
     updateTweets();

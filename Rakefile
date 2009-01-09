@@ -9,14 +9,16 @@ end
 
 JITTER_ROOT         = File.expand_path(File.dirname(__FILE__))
 JITTER_SOURCE_DIR   = File.join(JITTER_ROOT, "src")
-JITTER_BUILD_TARGET = File.join(JITTER_ROOT, "jquery")
+JITTER_BUILD_DIR    = File.join(JITTER_ROOT, "jquery")
 
 desc "Build"
 task :build do
   Dir.chdir(JITTER_SOURCE_DIR) do
-    File.open(File.join(JITTER_BUILD_TARGET, 'jquery.jitter.js'), 'w+') do |result|
+    File.open(output_path = File.join(JITTER_BUILD_DIR, 'jquery.jitter.js'), 'w+') do |result|
+      puts "Building Jitter to #{output_path}"
       ["jquery.timer", "jquery.jitter.core", "jquery.jitter.defaults", "jquery.jitter.errors", "jquery.jitter.feeds"].each do |js_file|
         result << File.path_to_string(File.join(JITTER_SOURCE_DIR, "#{js_file}.js"))
+        puts "  Added #{js_file}"
       end
     end
   end

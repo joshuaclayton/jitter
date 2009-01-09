@@ -1,20 +1,19 @@
 (function($) {
   $.timer = function (interval, callback) {
-    var interval = interval || 100;
+    interval = interval || 100;
     if (!callback) { return false; }
-    _timer = function (interval, callback) {
-      this.stop = function () { clearInterval(self.id); };
-      this.internalCallback = function () { callback(self); };
-      this.reset = function (val) {
-        if (self.id) { clearInterval(self.id); }
-        var val = val || 100;
-        this.id = setInterval(this.internalCallback, val);
+    var _timer = function (i, c) {
+      var public = {};
+      public.stop = function () { clearInterval(public.id); };
+      public.internalCallback = function () { c(public); };
+      public.reset = function (resetInterval) {
+        if (public.id) { clearInterval(public.id); }
+        resetInterval = resetInterval || public.interval;
+        public.id = setInterval(public.internalCallback, resetInterval);
       };
-      this.interval = interval;
-      this.id = setInterval(this.internalCallback, this.interval);
-      var self = this;
-      
-      return self;
+      public.interval = i;
+      public.id = setInterval(public.internalCallback, public.interval);
+      return public;
     };
     return _timer(interval, callback);
   };
@@ -56,7 +55,11 @@
       url += "?" + $.param(buildRequestParams());
       return url;
     };
-
+    
+    var calculateRefreshRate = function() {
+      return 1000 * options.refreshRate;
+    };
+    
     // public instance methods
     var feedClass = function() {
       var feedClassName = options.currentFeed.name;
@@ -90,7 +93,7 @@
           if(updatingExistingTweets) { data = data.reverse(); }                                     // reverse dataset for unshift
 
           $.each(data, function(index, item) {
-            updatingExistingTweets ? jitter.tweets.unshift(item) : jitter.tweets.push(item);
+            var modify = updatingExistingTweets ? jitter.tweets.unshift(item) : jitter.tweets.push(item);
           });
         }
       });
@@ -105,7 +108,7 @@
     public.feedTitle = feedTitle;
     
     // timer setup 
-    jitter.timer = $.timer(1000 * options.refreshRate, function(t) {
+    jitter.timer = $.timer(calculateRefreshRate(), function(t) {
       updateTweets();
     });
 
@@ -114,15 +117,14 @@
     };
     
     public.start = function() {
-      jitter.timer.reset(options.refreshRate);
-    }
+      jitter.timer.reset(calculateRefreshRate());
+    };
 
     updateTweets();
 
     return public;
   };
-})(jQuery);
-(function($) {
+})(jQuery);(function($) {
   $.jitter.defaults = {
     refreshRate: 60,
     feed: "search",
