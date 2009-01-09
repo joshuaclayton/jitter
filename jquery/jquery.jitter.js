@@ -1,4 +1,25 @@
 (function($) {
+  $.timer = function (interval, callback) {
+    var interval = interval || 100;
+    if (!callback) { return false; }
+    _timer = function (interval, callback) {
+      this.stop = function () { clearInterval(self.id); };
+      this.internalCallback = function () { callback(self); };
+      this.reset = function (val) {
+        if (self.id) { clearInterval(self.id); }
+        var val = val || 100;
+        this.id = setInterval(this.internalCallback, val);
+      };
+      this.interval = interval;
+      this.id = setInterval(this.internalCallback, this.interval);
+      var self = this;
+      
+      return self;
+    };
+    return _timer(interval, callback);
+  };
+})(jQuery);
+(function($) {
   $.jitter = function(settings) {
     var options = $.extend({}, $.jitter.defaults, settings);
     options.currentFeed = $.jitter.feeds[options.feed];
@@ -99,5 +120,78 @@
     updateTweets();
 
     return public;
+  };
+})(jQuery);
+(function($) {
+  $.jitter.defaults = {
+    refreshRate: 60,
+    feed: "search",
+    query: "jquery",
+    onUpdate: function(tweets) { if(tweets[0]) { alert("Newest Tweet:\n" + tweets[0].text); } else { alert("No new tweets, sorry!"); } }
+  };
+})(jQuery);
+(function($) {
+  $.jitter.errors = {
+    invalidSearchRequest: {
+      name: "Invalid Search Request",
+      message: "Your search jitter is lacking data; please verify that a query is supplied."
+    },
+    invalidGroupTimelineRequest: {
+      name: "Invalid Group Timeline Request",
+      message: "Your group timeline jitter is lacking data; please verify that at least one user is selected and a group name has been selected."
+    },
+    invalidUserTimelineRequest: {
+      name: "Invalid User Timeline Request",
+      message: "Your user timeline jitter is lacking data; please verify that a username has been assigned."
+    }
+  };
+})(jQuery);
+(function($) {
+  $.jitter.feeds = {
+    publicTimeline: {
+      url: "http://twitter.com/statuses/public_timeline.json",
+      name: "public",
+      title: "Public Timeline"
+    },
+    friendsTimeline: {
+      url: "http://{username}:{password}@twitter.com/statuses/friends_timeline.json",
+      requiresUsername: true,
+      requiresPassword: true,
+      trackSince: true,
+      name: "friends-{username}",
+      title: "Friend Timeline for {username}"
+    },
+    groupTimeline: {
+      url: "http://search.twitter.com/search.json",
+      trackSince: true,
+      filteredUsers: true,
+      name: "search-users-{groupName}",
+      title: "{groupName} Timeline"
+    },
+    userTimeline: {
+      url: "http://twitter.com/statuses/user_timeline/{username}.json",
+      requiresUsername: true,
+      trackSince: true,
+      name: "user-{username}",
+      title: "Timeline for {username}"
+    },
+    directMessages: {
+      url: "http://{username}:{password}@twitter.com/direct_messages.json",
+      trackSince: true,
+      requiresUsername: true,
+      requiresPassword: true,
+      name: "direct-message-{username}",
+      title: "Direct Messages for {username}"
+    },
+    rateLimitStatus: {
+      url: "http://twitter.com/account/rate_limit_status.json"
+    },
+    search: {
+      url: "http://search.twitter.com/search.json",
+      performSearch: true,
+      trackSince: true,
+      name: "search-{query}",
+      title: "Search Results for '{query}'"
+    }
   };
 })(jQuery);

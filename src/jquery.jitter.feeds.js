@@ -13,7 +13,7 @@
       name: "friends-{username}",
       title: "Friend Timeline for {username}"
     },
-    selectedUserTimeline: {
+    groupTimeline: {
       url: "http://search.twitter.com/search.json",
       trackSince: true,
       filteredUsers: true,
