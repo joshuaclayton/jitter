@@ -17,7 +17,7 @@
       url: "http://search.twitter.com/search.json",
       trackSince: true,
       filteredUsers: true,
-      name: "search-users-{groupName}",
+      name: "group-{groupName}",
       title: "{groupName} Timeline"
     },
     userTimeline: {
