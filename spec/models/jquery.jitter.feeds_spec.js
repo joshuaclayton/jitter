@@ -181,7 +181,7 @@ Screw.Unit(function() {
       
       before(function() {
         feed = $.jitter.feeds.search;
-      })
+      });
       
       it("should point to Twitter's search API", function() {
         expect(feed.url).to(equal, "http://search.twitter.com/search.json");
