@@ -9,11 +9,16 @@ Screw.Unit(function() {
       });
 
       it("should assign options.currentFeed to correct feed", function() {
+        stubTimer();
         jitter = $.jitter({feed: "search", query: "jquery"});
         expect(jitter.options().currentFeed).to(equal, $.jitter.feeds.search);
       });
       
       describe("with potentially passed settings", function() {
+        before(function() {
+          stubTimer();
+        });
+        
         it("should use defaults if no settings are passed", function() {
           jitter = $.jitter();
           delete(jitter.options().currentFeed);
@@ -35,17 +40,15 @@ Screw.Unit(function() {
       });
       
       it("should properly return feed class", function() {
+        stubTimer();
         jitter = $.jitter({feed: "search", query: "Three Separate Words"});
         expect(jitter.feedClass()).to(equal, "search-three-separate-words");
       });
       
       it("should properly return feed title", function() {
+        stubTimer();
         jitter = $.jitter({feed: "search", query: "Three Separate Words"});
         expect(jitter.feedTitle()).to(equal, "Search Results for 'Three Separate Words'");
-      });
-      
-      after(function() {
-        jitter.stop();
       });
     });
     
@@ -54,6 +57,7 @@ Screw.Unit(function() {
       
       before(function() {
         $.ajax = function(opts) { options = opts; };
+        stubTimer();
       });
       
       it("should be assigned a 'jsonp' data type", function() {
@@ -64,10 +68,6 @@ Screw.Unit(function() {
       it("should be a GET request", function() {
         jitter = $.jitter();
         expect(options.type).to(equal, "GET");
-      });
-      
-      after(function() {
-        jitter.stop();
       });
     });
     
@@ -178,6 +178,24 @@ Screw.Unit(function() {
           jitter.updateTweets();
           expect(options.url).to(match, new RegExp(sinceID));
         });
+      });
+      
+      it("should call the custom callback onUpdate", function() {
+        var updateCalled = false;
+        jitter = $.jitter({feed: "search", query: "twitter", onUpdate: function(t) { updateCalled = true; }});
+        options.success(searchResponse);
+        expect(updateCalled).to(be_true);
+      });
+      
+      it("should resolve tweets in the correct order", function() {
+        var tweets1 = [{id: 2}, {id: 1}], 
+            tweets2 = [{id: 4}, {id: 3}];
+        jitter = $.jitter({feed: "search", query: "twitter", onUpdate: function(t) {}});
+        options.success(tweets1);
+        expect(jitter.tweets()).to(equal, tweets1);
+        options.success(tweets2);
+        jitter.updateTweets();
+        expect(jitter.tweets()).to(equal, [{id: 4}, {id: 3}, {id: 2}, {id: 1}]);
       });
     });
   });
