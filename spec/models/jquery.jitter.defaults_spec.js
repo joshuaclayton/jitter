@@ -22,5 +22,10 @@ Screw.Unit(function() {
       var defaultCallback = function(tweets) { if(tweets[0]) { alert("Newest Tweet:\n" + tweets[0].text); } else { alert("No new tweets, sorry!"); } };
       expect(defaults.onUpdate).to(equal, defaultCallback);
     });
+    
+    it("should assign an onError callback", function() {
+      var defaultCallback = function(error) { alert("Error: " + error.name + "\nMessage: " + error.message); };
+      expect(defaults.onError).to(equal, defaultCallback);
+    });
   });
 });
