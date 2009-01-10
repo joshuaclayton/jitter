@@ -1,3 +1,13 @@
+String.prototype.cssClassify = function(sep) {
+  sep = sep || "-";
+  var result = this;
+  return result.replace(/[^\x00-\x7F]+/, '')
+    .replace(/[^\w\-_\+]+/g, sep)
+    .replace(new RegExp(sep + "+"), sep)
+    .replace(new RegExp("^" + sep + "|" + sep + "$"), '')
+    .toLowerCase();
+};
+
 (function($) {
   $.jitter = function(settings) {
     var options = $.extend({}, $.jitter.defaults, settings);
@@ -8,7 +18,7 @@
     var jitter = {tweets: []};
 
     // public object
-    var public = {};
+    var self = {};
 
     // private methods
     var buildRequestParams = function() {
@@ -24,7 +34,10 @@
       var url = urlOptions.url || feedItem.url;
       if(feedItem.requiresUsername) { url = url.replace(/\{username\}/, urlOptions.username || options.username); }
       if(feedItem.requiresPassword) { url = url.replace(/\{password\}/, urlOptions.password || options.password); }
-      url += "?" + $.param(buildRequestParams());
+
+      var queryString = $.param(buildRequestParams());
+      if(queryString.length) { url += "?" + queryString; }
+      
       return url;
     };
     
@@ -33,10 +46,8 @@
     };
     
     var handleError = function(error) {
-      if(options.onError && typeof(options.onError) == "function"){ 
+      if(options.onError && typeof(options.onError) == "function") {
         options.onError(error);
-      } else {
-        alert("Error: " + error.name + "\nMessage: " + error.message);
       }
     };
     
@@ -46,11 +57,11 @@
           updateTweets();
         });
 
-        public.stop = function() {
+        self.stop = function() {
           jitter.timer.stop();
         };
 
-        public.start = function() {
+        self.start = function() {
           jitter.timer.reset(calculateRefreshRate());
         };
       }
@@ -96,16 +107,17 @@
     };
     
     // point to internals
-    public.tweets = function() { return jitter.tweets; };
-    public.updateTweets = function() { updateTweets(); };
+    self.tweets = function() { return jitter.tweets; };
+    self.updateTweets = function() { updateTweets(); };
+    self.options = function() { return options; };
     
     // make feed info public
-    public.feedClass = feedClass;
-    public.feedTitle = feedTitle;
+    self.feedClass = feedClass;
+    self.feedTitle = feedTitle;
     
     try {
       if(options.currentFeed == $.jitter.feeds.search && !options.query) { throw($.jitter.errors.invalidSearchRequest); }
-      if(options.currentFeed == $.jitter.feeds.groupTimeline && (!options.users.length || !options.users.groupName)) { throw($.jitter.errors.invalidGroupTimelineRequest); }
+      if(options.currentFeed == $.jitter.feeds.groupTimeline && (!options.users || (options.users && !options.users.length) || !options.groupName)) { throw($.jitter.errors.invalidGroupTimelineRequest); }
       if(options.currentFeed == $.jitter.feeds.userTimeline && !options.username) { throw($.jitter.errors.invalidUserTimelineRequest); }
     } catch(error) {
       handleError(error);
@@ -116,14 +128,15 @@
     
     updateTweets();
 
-    return public;
+    return self;
   };
 })(jQuery);(function($) {
   $.jitter.defaults = {
     refreshRate: 60,
     feed: "search",
     query: "jquery",
-    onUpdate: function(tweets) { if(tweets[0]) { alert("Newest Tweet:\n" + tweets[0].text); } else { alert("No new tweets, sorry!"); } }
+    onUpdate: function(tweets) { if(tweets[0]) { alert("Newest Tweet:\n" + tweets[0].text); } else { alert("No new tweets, sorry!"); } },
+    onError: function(error) { alert("Error: " + error.name + "\nMessage: " + error.message); }
   };
 })(jQuery);
 (function($) {
@@ -161,7 +174,7 @@
       url: "http://search.twitter.com/search.json",
       trackSince: true,
       filteredUsers: true,
-      name: "search-users-{groupName}",
+      name: "group-{groupName}",
       title: "{groupName} Timeline"
     },
     userTimeline: {
