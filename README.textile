@@ -1,3 +1,7 @@
 h1. Jitter!
 
 Jitter is a jQuery plugin to easily grab updates from Twitter.
+
+h2. Author
+
+Written by Joshua Clayton, 2009
