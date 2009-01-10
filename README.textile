@@ -1,0 +1,3 @@
+h1. Jitter!
+
+Jitter is a jQuery plugin to easily grab updates from Twitter.
