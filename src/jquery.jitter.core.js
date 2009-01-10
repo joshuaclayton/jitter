@@ -94,7 +94,7 @@ String.prototype.cssClassify = function(sep) {
           var originalSinceID = jitter.sinceID,                                                     // freeze sinceID to see if sinceID was set from a previous request
               updatingExistingTweets = !!jitter.sinceID;
 
-          if(options.currentFeed.trackSince === true && data[0]) { jitter.sinceID = data[0].id; }   // set sinceID to the 'newest' tweet in the results
+          if(options.currentFeed.trackSince == true && data[0]) { jitter.sinceID = data[0].id; }    // set sinceID to the 'newest' tweet in the results
           if(options.onUpdate && typeof(options.onUpdate) == "function"){ options.onUpdate(data); } // trigger the onUpdate callback
 
           if(updatingExistingTweets) { data = data.reverse(); }                                     // reverse dataset for unshift

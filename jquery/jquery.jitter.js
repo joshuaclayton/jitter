@@ -91,10 +91,10 @@ String.prototype.cssClassify = function(sep) {
         dataType: "jsonp",
         success: function(data) {
           if(data.results) { data = data.results; }                                                 // set data to data from search results
-          var originalSinceID = jitter.sinceID;                                                     // freeze sinceID to see if sinceID was set from a previous request
-          var updatingExistingTweets = originalSinceID && jitter.sinceID;
+          var originalSinceID = jitter.sinceID,                                                     // freeze sinceID to see if sinceID was set from a previous request
+              updatingExistingTweets = !!jitter.sinceID;
 
-          if(options.currentFeed.trackSince === true && data[0]) { jitter.sinceID = data[0].id; }   // set sinceID to the 'newest' tweet in the results
+          if(options.currentFeed.trackSince == true && data[0]) { jitter.sinceID = data[0].id; }    // set sinceID to the 'newest' tweet in the results
           if(options.onUpdate && typeof(options.onUpdate) == "function"){ options.onUpdate(data); } // trigger the onUpdate callback
 
           if(updatingExistingTweets) { data = data.reverse(); }                                     // reverse dataset for unshift
