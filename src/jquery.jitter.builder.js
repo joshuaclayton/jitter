@@ -1,8 +1,8 @@
 (function($) {
   $.jitter.builder = function(target, options) {
     var builder = {},
-        self = {},
-        options = options || {};
+        self = {};
+    options = options || {};
     
     var showTweetCount = function(anchor) {
       var ct = $(anchor).attr("unreadCount");
@@ -14,34 +14,41 @@
       tweetsParent.find(tweetClass + ":lt(" + numberOfTweetsToDisplay + ")").show();
     };
     
+    var readFilterLink = function(anchor) {
+      var $anchor = $(anchor);
+      $anchor.attr("unreadCount", 0);
+    };
+    
     var triggerFilterLink = function(anchor) {
       var $anchor = $(anchor);
       $anchor.parent().children().removeClass("active");
       $anchor.
         addClass("active").
         attr("displayTweets", "." + $anchor.attr("id"));
+      readFilterLink(anchor);
+      
       showTweets(target, "." + $anchor.attr("id"), showTweetCount($anchor));
     };
     
     var handleTweets = function(tweets) {
       var currentlyFilteredToSelf = target.find(".jitter-filters a.active").attr("id").indexOf(builder.cssClass) >= 0;
       var currentlyFilteredToAll = target.find(".jitter-filters a.active").length ? (target.find(".jitter-filters a.active").attr("class").match("allTweets") ? true : false) : false;
-
+      
       if(tweets.length) {
         var wrapper = $("<div/>");
-
+        
         $.each(tweets, function(index, tweet) {
           var tweetWrapper = 
             $("<div class='tweet clearfix'/>").
               addClass(builder.cssClass).
               addClass("author-" + (tweet.user ? tweet.user.screen_name : tweet.from_user));
-
-          var tweetBody = $("<div class='tweetBody'/>").html(tweet['text']);
+          
+          var tweetBody = $("<div class='tweetBody'/>").html(tweet.text);
           var authorImage = $("<img/>").attr("src", (tweet.user ? tweet.user.profile_image_url : tweet.profile_image_url));
           var author = 
             $("<div class='author'/>").
               append(
-                $("<span class='displayName'/>").html(tweet.user ? tweet.user['name'] : tweet.from_user)
+                $("<span class='displayName'/>").html(tweet.user ? tweet.user.name : tweet.from_user)
               ).
               append(
                 $("<img/>").attr("src", (tweet.user ? tweet.user.profile_image_url : tweet.profile_image_url))
@@ -52,30 +59,30 @@
               html(
                 new Date(tweet.created_at).toUTCString()
               );
-
+          
           tweetWrapper.
             append(author).
             append(tweetBody).
             append(createdAt).
             appendTo(wrapper);
         });
-
+        
         var tweetElements = $(wrapper.html()).hide();
-
+        
         if(target.find(".tweet").length) {
           target.prepend(tweetElements);
           if(currentlyFilteredToSelf || currentlyFilteredToAll) {
             tweetElements.fadeIn("slow");
           } else {
             var correspondingAnchor = $("a#" + builder.cssClass);
-            var num = new Number(correspondingAnchor.attr("unreadCount")) + tweets.length;
+            var num = Number(correspondingAnchor.attr("unreadCount")) + tweets.length;
             if(num) { correspondingAnchor.attr("unreadCount", num); }
           }
         } else {
           target.append(tweetElements);
         }
       }
-
+      
       if(currentlyFilteredToSelf) {
         showTweets(target, "." + builder.cssClass, showTweetCount("#" + builder.cssClass));
       } else if(currentlyFilteredToAll) {
@@ -89,17 +96,20 @@
     builder.feedTitle = builder.jitter.feedTitle();
     
     var filterLink = 
-      $("<a/>").html(builder.feedTitle).
-        addClass("active").
-        attr("href", "#").
-        attr("id", builder.cssClass).
-        attr("unreadCount", 0).
+      $("<a/>").
+        html(builder.feedTitle).
+        attr({
+          href: "#",
+          id: builder.cssClass,
+          unreadCount: 0
+        }).
         click(function() {
           triggerFilterLink(this);
         }).
         appendTo(target.find(".jitter-filters"));
     
-    self.showTweets = function() { return showTweets(); };
+    self.showTweets = showTweets;
+    self.showTweetCount = showTweetCount;
     return self;
   };
 })(jQuery);

@@ -16,7 +16,7 @@ task :build do
   Dir.chdir(JITTER_SOURCE_DIR) do
     File.open(output_path = File.join(JITTER_BUILD_DIR, 'jquery.jitter.js'), 'w+') do |result|
       puts "Building Jitter to #{output_path}"
-      ["jquery.jitter.core", "jquery.jitter.defaults", "jquery.jitter.errors", "jquery.jitter.feeds"].each do |js_file|
+      ["jquery.jitter.core", "jquery.jitter.defaults", "jquery.jitter.errors", "jquery.jitter.feeds", "jquery.jitter.builder", "jquery.fn.jitter"].each do |js_file|
         result << File.path_to_string(File.join(JITTER_SOURCE_DIR, "#{js_file}.js"))
         puts "  Added #{js_file}"
       end
