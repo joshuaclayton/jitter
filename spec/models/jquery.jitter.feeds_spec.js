@@ -47,6 +47,10 @@ Screw.Unit(function() {
         expect(feed.title).to_not(be_empty);
       });
       
+      it("should have the username in the title", function() {
+        expect(feed.title).to(match, /username/);
+      });
+      
       it("should not try to perform a searh", function() {
         expect(feed.performSearch).to(be_undefined);
       });
@@ -87,6 +91,10 @@ Screw.Unit(function() {
         expect(feed.title).to_not(be_empty);
       });
       
+      it("should have the username in the title", function() {
+        expect(feed.title).to(match, /groupName/);
+      });
+      
       it("should not try to perform a searh", function() {
         expect(feed.performSearch).to(be_undefined);
       });
@@ -121,6 +129,10 @@ Screw.Unit(function() {
       
       it("should have a title", function() {
         expect(feed.title).to_not(be_empty);
+      });
+      
+      it("should have the username in the title", function() {
+        expect(feed.title).to(match, /username/);
       });
       
       it("should not try to perform a searh", function() {
@@ -159,6 +171,10 @@ Screw.Unit(function() {
         expect(feed.title).to_not(be_empty);
       });
       
+      it("should have the username in the title", function() {
+        expect(feed.title).to(match, /username/);
+      });
+      
       it("should not try to perform a searh", function() {
         expect(feed.performSearch).to(be_undefined);
       });
@@ -193,6 +209,10 @@ Screw.Unit(function() {
       
       it("should have a title", function() {
         expect(feed.title).to_not(be_empty);
+      });
+      
+      it("should have the username in the title", function() {
+        expect(feed.title).to(match, /query/);
       });
       
       it("should perform a searh", function() {
