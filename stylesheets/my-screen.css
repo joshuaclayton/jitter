@@ -1,6 +1,7 @@
 .jitter-filters { position: absolute; top: 0; left: 0; background: #ccc;}
 .jitter-filters a {display: block;}
 .jitter-filters a.active {font-weight: bold;}
+.jitter-filters a .unreadCount {padding-left: .5em;}
 .tweet { border: 1px solid #ccc; padding: 2em;}
 .tweet .author .displayName {font-weight: bold; padding: 1em; border: 1px solid #ccc;}
 .tweet .tweetBody {font-size: 1.5em; font-weight: 500; padding: 1em; border: 1px solid #ccc;}

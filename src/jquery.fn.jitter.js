@@ -13,6 +13,10 @@
       target.prepend(filters);
     }
     
+    if(!target.find(".tweets").length) {
+      target.append($("<div class='tweets'/>"));
+    }
+    
     var builder = $.jitter.builder(target, options);
     
     $(".allTweets").click(function() {

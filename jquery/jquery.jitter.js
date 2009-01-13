@@ -222,7 +222,7 @@ String.prototype.cssClassify = function(sep) {
     
     var readFilterLink = function(anchor) {
       var $anchor = $(anchor);
-      $anchor.attr("unreadCount", 0);
+      $anchor.attr("unreadcount", 0);
     };
     
     var triggerFilterLink = function(anchor) {
@@ -250,21 +250,14 @@ String.prototype.cssClassify = function(sep) {
               addClass("author-" + (tweet.user ? tweet.user.screen_name : tweet.from_user));
           
           var tweetBody = $("<div class='tweetBody'/>").html(tweet.text);
-          var authorImage = $("<img/>").attr("src", (tweet.user ? tweet.user.profile_image_url : tweet.profile_image_url));
           var author = 
             $("<div class='author'/>").
-              append(
-                $("<span class='displayName'/>").html(tweet.user ? tweet.user.name : tweet.from_user)
-              ).
-              append(
-                $("<img/>").attr("src", (tweet.user ? tweet.user.profile_image_url : tweet.profile_image_url))
-              );
+              append($("<span class='displayName'/>").html($.twitterURL(tweet))).
+              append($.twitterImage(tweet));
           
           var createdAt = 
             $("<div class='createdAt'></div>").
-              html(
-                new Date(tweet.created_at).toUTCString()
-              );
+              html(new Date(tweet.created_at).toUTCString());
           
           tweetWrapper.
             append(author).
@@ -276,7 +269,7 @@ String.prototype.cssClassify = function(sep) {
         var tweetElements = $(wrapper.html()).hide();
         
         if(target.find(".tweet").length) {
-          target.prepend(tweetElements);
+          target.find(".tweets").prepend(tweetElements);
           if(currentlyFilteredToSelf || currentlyFilteredToAll) {
             tweetElements.fadeIn("slow");
           } else {
@@ -285,7 +278,7 @@ String.prototype.cssClassify = function(sep) {
             if(num) { correspondingAnchor.attr("unreadCount", num); }
           }
         } else {
-          target.append(tweetElements);
+          target.find(".tweets").append(tweetElements);
         }
       }
       
@@ -309,15 +302,76 @@ String.prototype.cssClassify = function(sep) {
           id: builder.cssClass,
           unreadCount: 0
         }).
-        click(function() {
+        click(function() { 
           triggerFilterLink(this);
         }).
-        appendTo(target.find(".jitter-filters"));
-    
+        appendTo(target.find(".jitter-filters")).
+        watchAttribute("unreadcount", "unreadChanged").
+        bind("unreadChanged", function(e) {
+          var $this = $(this);
+          var ct = $this.attr("unreadcount");
+          if(!$this.find(".unreadCount").length) {
+            $("<span class='unreadCount'/>").
+              html(ct).
+              appendTo($this);
+          } else {
+            $this.
+              find(".unreadCount").
+              html(ct);
+          }
+          if($this.find(".unreadCount").html() == "0") {
+            $this.find(".unreadCount").remove();
+          }
+        });
+      
     self.showTweets = showTweets;
     self.showTweetCount = showTweetCount;
     return self;
   };
+})(jQuery);(function($) {
+  $.twitterURL = function(tweet) {
+    var username, displayName;
+    
+    if(typeof(tweet) === "object") {
+      username    = tweet.user ? tweet.user.screen_name : tweet.from_user;
+      displayName = tweet.user ? tweet.user.name : tweet.from_user;
+    } else if(typeof(tweet) === "string") {
+      username = tweet.replace(/\@/, '');
+      displayName = tweet;
+    }
+    
+    return $("<a/>").
+      attr("href", "http://twitter.com/" + username).
+      html(displayName);
+  };
+  
+  $.twitterImage = function(tweet) {
+    return $("<img/>").attr("src", (tweet.user ? tweet.user.profile_image_url : tweet.profile_image_url));
+  };
+  
+  $.linkTwitterUsernames = function(text) {
+    var matchArray = text.match(/(\@\w+)/g);
+    
+    $.each(matchArray, function(idx, item) {
+      text = text.replace(RegExp(item, "g"), $.twitterURL(item).parent().html());
+    });
+    return text;
+  };
+  
+  $.fn.watchAttribute = function(attribute, triggerName) {
+    var self = this;
+    var cachedAttribute = self.attr(attribute);
+    
+    $.timer(50, function(t) {
+      if(self.attr(attribute) != cachedAttribute) {
+        self.trigger(triggerName);
+        cachedAttribute = self.attr(attribute);
+      }
+    });
+    
+    return self;
+  };
+  
 })(jQuery);(function($) {
   $.fn.jitter = function(options) {
     var target = this;
@@ -331,6 +385,10 @@ String.prototype.cssClassify = function(sep) {
           addClass("active allTweets");
       filters.append(filterAll);
       target.prepend(filters);
+    }
+    
+    if(!target.find(".tweets").length) {
+      target.append($("<div class='tweets'/>"));
     }
     
     var builder = $.jitter.builder(target, options);

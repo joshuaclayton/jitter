@@ -16,7 +16,7 @@
     
     var readFilterLink = function(anchor) {
       var $anchor = $(anchor);
-      $anchor.attr("unreadCount", 0);
+      $anchor.attr("unreadcount", 0);
     };
     
     var triggerFilterLink = function(anchor) {
@@ -44,21 +44,14 @@
               addClass("author-" + (tweet.user ? tweet.user.screen_name : tweet.from_user));
           
           var tweetBody = $("<div class='tweetBody'/>").html(tweet.text);
-          var authorImage = $("<img/>").attr("src", (tweet.user ? tweet.user.profile_image_url : tweet.profile_image_url));
           var author = 
             $("<div class='author'/>").
-              append(
-                $("<span class='displayName'/>").html(tweet.user ? tweet.user.name : tweet.from_user)
-              ).
-              append(
-                $("<img/>").attr("src", (tweet.user ? tweet.user.profile_image_url : tweet.profile_image_url))
-              );
+              append($("<span class='displayName'/>").html($.twitterURL(tweet))).
+              append($.twitterImage(tweet));
           
           var createdAt = 
             $("<div class='createdAt'></div>").
-              html(
-                new Date(tweet.created_at).toUTCString()
-              );
+              html(new Date(tweet.created_at).toUTCString());
           
           tweetWrapper.
             append(author).
@@ -70,7 +63,7 @@
         var tweetElements = $(wrapper.html()).hide();
         
         if(target.find(".tweet").length) {
-          target.prepend(tweetElements);
+          target.find(".tweets").prepend(tweetElements);
           if(currentlyFilteredToSelf || currentlyFilteredToAll) {
             tweetElements.fadeIn("slow");
           } else {
@@ -79,7 +72,7 @@
             if(num) { correspondingAnchor.attr("unreadCount", num); }
           }
         } else {
-          target.append(tweetElements);
+          target.find(".tweets").append(tweetElements);
         }
       }
       
@@ -103,11 +96,28 @@
           id: builder.cssClass,
           unreadCount: 0
         }).
-        click(function() {
+        click(function() { 
           triggerFilterLink(this);
         }).
-        appendTo(target.find(".jitter-filters"));
-    
+        appendTo(target.find(".jitter-filters")).
+        watchAttribute("unreadcount", "unreadChanged").
+        bind("unreadChanged", function(e) {
+          var $this = $(this);
+          var ct = $this.attr("unreadcount");
+          if(!$this.find(".unreadCount").length) {
+            $("<span class='unreadCount'/>").
+              html(ct).
+              appendTo($this);
+          } else {
+            $this.
+              find(".unreadCount").
+              html(ct);
+          }
+          if($this.find(".unreadCount").html() == "0") {
+            $this.find(".unreadCount").remove();
+          }
+        });
+      
     self.showTweets = showTweets;
     self.showTweetCount = showTweetCount;
     return self;
