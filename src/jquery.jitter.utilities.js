@@ -20,11 +20,21 @@
   };
   
   $.linkTwitterUsernames = function(text) {
-    var matchArray = text.match(/(\@\w+)/g);
+    var urlMatches = text.match(/https?\:\/\/[^"\s\<\>]*[^.,;'">\:\s\<\>\)\]\!]/g);
+    if(urlMatches) {
+      $.each(urlMatches, function(idx, item) {
+        text = text.replace(RegExp(item, "g"), '<a href="' + item + '">' + item + '</a>');
+      });
+    }
     
-    $.each(matchArray, function(idx, item) {
-      text = text.replace(RegExp(item, "g"), $.twitterURL(item).parent().html());
-    });
+    var twitterReplies = text.match(/(\@\w+)/g);
+    
+    if(twitterReplies) {
+      $.each(twitterReplies, function(idx, item) {
+        text = text.replace(RegExp(item, "g"), $.twitterURL(item).parent().html());
+      });
+    }
+    
     return text;
   };
   

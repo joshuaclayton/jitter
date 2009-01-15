@@ -5,7 +5,7 @@
     options = options || {};
     
     var showTweetCount = function(anchor) {
-      var ct = $(anchor).attr("unreadCount");
+      var ct = $(anchor).data("unreadCount");
       return (ct > 20 ? ct : 20);
     };
     
@@ -16,7 +16,7 @@
     
     var readFilterLink = function(anchor) {
       var $anchor = $(anchor);
-      $anchor.attr("unreadcount", 0);
+      $anchor.data("unreadCount", 0);
     };
     
     var triggerFilterLink = function(anchor) {
@@ -42,8 +42,7 @@
             $("<div class='tweet clearfix'/>").
               addClass(builder.cssClass).
               addClass("author-" + (tweet.user ? tweet.user.screen_name : tweet.from_user));
-          
-          var tweetBody = $("<div class='tweetBody'/>").html(tweet.text);
+          var tweetBody = $("<div class='tweetBody'/>").html($.linkTwitterUsernames(tweet.text));
           var author = 
             $("<div class='author'/>").
               append($("<span class='displayName'/>").html($.twitterURL(tweet))).
@@ -68,8 +67,8 @@
             tweetElements.fadeIn("slow");
           } else {
             var correspondingAnchor = $("a#" + builder.cssClass);
-            var num = Number(correspondingAnchor.attr("unreadCount")) + tweets.length;
-            if(num) { correspondingAnchor.attr("unreadCount", num); }
+            var num = Number(correspondingAnchor.data("unreadCount")) + tweets.length;
+            if(num) { correspondingAnchor.data("unreadCount", num); }
           }
         } else {
           target.find(".tweets").append(tweetElements);
@@ -93,28 +92,29 @@
         html(builder.feedTitle).
         attr({
           href: "#",
-          id: builder.cssClass,
-          unreadCount: 0
+          id: builder.cssClass
         }).
+        data("unreadCount", 0).
         click(function() { 
           triggerFilterLink(this);
         }).
         appendTo(target.find(".jitter-filters")).
-        watchAttribute("unreadcount", "unreadChanged").
-        bind("unreadChanged", function(e) {
+        bind("setData", function(e, dataKey, dataVal) {
           var $this = $(this);
-          var ct = $this.attr("unreadcount");
-          if(!$this.find(".unreadCount").length) {
-            $("<span class='unreadCount'/>").
-              html(ct).
-              appendTo($this);
-          } else {
-            $this.
-              find(".unreadCount").
-              html(ct);
-          }
-          if($this.find(".unreadCount").html() == "0") {
-            $this.find(".unreadCount").remove();
+          if(dataKey === "unreadCount") {
+            var ct = dataVal;
+            if(!$this.find(".unreadCount").length) {
+              $("<span class='unreadCount'/>").
+                html(ct).
+                appendTo($this);
+            } else {
+              $this.
+                find(".unreadCount").
+                html(ct);
+            }
+            if(dataVal === 0) {
+              $this.find(".unreadCount").remove();
+            }
           }
         });
       
