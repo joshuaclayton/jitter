@@ -3,7 +3,8 @@
     var target = this;
     
     if(!target.find(".jitter-filters").length) {
-      var filters = $("<div class='jitter-filters'/>");
+      var filters = $("<div class='jitter-filters span-6'/>");
+      
       var filterAll = 
         $("<a/>").
           html("All Feeds").
@@ -14,7 +15,7 @@
     }
     
     if(!target.find(".tweets").length) {
-      target.append($("<div class='tweets'/>"));
+      target.append($("<div class='tweets span-18 last'/>"));
     }
     
     var builder = $.jitter.builder(target, options);

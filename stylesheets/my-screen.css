@@ -1,8 +1,21 @@
-.jitter-filters { position: absolute; top: 0; left: 0; background: #ccc;}
-.jitter-filters a {display: block;}
+.jitter-filters { background: #ccc;}
+.jitter-filters a {display: block; padding: .5em .75em; text-decoration: none; position: relative; border-bottom: 1px solid #aaa; border-top: 1px solid #ddd;}
+.jitter-filters a:hover {background: #c0c0c0; border-bottom: 1px solid #a0a0a0; border-top: 1px solid #d5d5d5;}
 .jitter-filters a.active {font-weight: bold;}
-.jitter-filters a .unreadCount {padding-left: .5em;}
-.tweet { border: 1px solid #ccc; padding: 2em;}
+.jitter-filters a .unreadCount {
+  position: absolute;
+  text-align: center; 
+  padding: .25em .5em; 
+  top: .25em;
+  right: .5em;
+  background: #d00; 
+  width: 2em;
+  color: #fff;
+  font-weight: bold;
+  -moz-border-radius: .5em;
+  -webkit-border-radius: .5em;
+}
+.tweet { padding: 2em;}
 .tweet .author .displayName {font-weight: bold; padding: 1em; border: 1px solid #ccc;}
 .tweet .tweetBody {font-size: 1.5em; font-weight: 500; padding: 1em; border: 1px solid #ccc;}
 .tweet .author img {float: left;}

@@ -211,7 +211,7 @@ String.prototype.cssClassify = function(sep) {
     options = options || {};
     
     var showTweetCount = function(anchor) {
-      var ct = $(anchor).attr("unreadCount");
+      var ct = $(anchor).data("unreadCount");
       return (ct > 20 ? ct : 20);
     };
     
@@ -222,7 +222,7 @@ String.prototype.cssClassify = function(sep) {
     
     var readFilterLink = function(anchor) {
       var $anchor = $(anchor);
-      $anchor.attr("unreadcount", 0);
+      $anchor.data("unreadCount", 0);
     };
     
     var triggerFilterLink = function(anchor) {
@@ -248,8 +248,7 @@ String.prototype.cssClassify = function(sep) {
             $("<div class='tweet clearfix'/>").
               addClass(builder.cssClass).
               addClass("author-" + (tweet.user ? tweet.user.screen_name : tweet.from_user));
-          
-          var tweetBody = $("<div class='tweetBody'/>").html(tweet.text);
+          var tweetBody = $("<div class='tweetBody'/>").html($.linkTwitterUsernames(tweet.text));
           var author = 
             $("<div class='author'/>").
               append($("<span class='displayName'/>").html($.twitterURL(tweet))).
@@ -274,8 +273,8 @@ String.prototype.cssClassify = function(sep) {
             tweetElements.fadeIn("slow");
           } else {
             var correspondingAnchor = $("a#" + builder.cssClass);
-            var num = Number(correspondingAnchor.attr("unreadCount")) + tweets.length;
-            if(num) { correspondingAnchor.attr("unreadCount", num); }
+            var num = Number(correspondingAnchor.data("unreadCount")) + tweets.length;
+            if(num) { correspondingAnchor.data("unreadCount", num); }
           }
         } else {
           target.find(".tweets").append(tweetElements);
@@ -299,30 +298,27 @@ String.prototype.cssClassify = function(sep) {
         html(builder.feedTitle).
         attr({
           href: "#",
-          id: builder.cssClass,
-          unreadCount: 0
+          id: builder.cssClass
         }).
         click(function() { 
           triggerFilterLink(this);
         }).
-        appendTo(target.find(".jitter-filters")).
-        watchAttribute("unreadcount", "unreadChanged").
-        bind("unreadChanged", function(e) {
+        observeData().
+        bind("unreadCountChanged", function(e, data) {
           var $this = $(this);
-          var ct = $this.attr("unreadcount");
           if(!$this.find(".unreadCount").length) {
             $("<span class='unreadCount'/>").
-              html(ct).
+              html(data.to).
               appendTo($this);
           } else {
             $this.
               find(".unreadCount").
-              html(ct);
+              html(data.to);
           }
-          if($this.find(".unreadCount").html() == "0") {
-            $this.find(".unreadCount").remove();
-          }
-        });
+          if(data.to === 0) { $this.find(".unreadCount").remove(); }
+        }).
+        data("unreadCount", 0).
+        appendTo(target.find(".jitter-filters"));
       
     self.showTweets = showTweets;
     self.showTweetCount = showTweetCount;
@@ -350,34 +346,54 @@ String.prototype.cssClassify = function(sep) {
   };
   
   $.linkTwitterUsernames = function(text) {
-    var matchArray = text.match(/(\@\w+)/g);
+    var urlMatches = text.match(/https?\:\/\/[^"\s\<\>]*[^.,;'">\:\s\<\>\)\]\!]/g);
+    if(urlMatches) {
+      $.each(urlMatches, function(idx, item) {
+        text = text.replace(RegExp(item, "g"), '<a href="' + item + '">' + item + '</a>');
+      });
+    }
     
-    $.each(matchArray, function(idx, item) {
-      text = text.replace(RegExp(item, "g"), $.twitterURL(item).parent().html());
-    });
+    var twitterReplies = text.match(/(\@\w+)/g);
+    
+    if(twitterReplies) {
+      $.each(twitterReplies, function(idx, item) {
+        text = text.replace(RegExp(item, "g"), $.twitterURL(item).outerHTML());
+      });
+    }
+    
     return text;
   };
   
-  $.fn.watchAttribute = function(attribute, triggerName) {
-    var self = this;
-    var cachedAttribute = self.attr(attribute);
-    
-    $.timer(50, function(t) {
-      if(self.attr(attribute) != cachedAttribute) {
-        self.trigger(triggerName);
-        cachedAttribute = self.attr(attribute);
-      }
-    });
-    
-    return self;
+  $.fn.outerHTML = function() {
+    return $("<div/>").append(this.eq(0).clone()).html();
+  };
+})(jQuery);
+
+(function($) {
+  var binder = function(e, dataKey, dataValue) {
+    var $this = $(this),
+        oldValue = $this.data(dataKey),
+        newValue = dataValue,
+        passed = {
+          attr: dataKey,
+          from: oldValue,
+          to:   newValue
+        };
+    if(oldValue !== newValue) { $this.trigger(dataKey + "Changed", passed); $this.trigger("dataChanged", passed); }
   };
   
+  $.fn.observeData = function() {
+    return $(this).each(function() {
+      $(this).bind("setData", binder);
+    });
+  };
 })(jQuery);(function($) {
   $.fn.jitter = function(options) {
     var target = this;
     
     if(!target.find(".jitter-filters").length) {
-      var filters = $("<div class='jitter-filters'/>");
+      var filters = $("<div class='jitter-filters span-6'/>");
+      
       var filterAll = 
         $("<a/>").
           html("All Feeds").
@@ -388,7 +404,7 @@ String.prototype.cssClassify = function(sep) {
     }
     
     if(!target.find(".tweets").length) {
-      target.append($("<div class='tweets'/>"));
+      target.append($("<div class='tweets span-18 last'/>"));
     }
     
     var builder = $.jitter.builder(target, options);

@@ -31,25 +31,34 @@
     
     if(twitterReplies) {
       $.each(twitterReplies, function(idx, item) {
-        text = text.replace(RegExp(item, "g"), $.twitterURL(item).parent().html());
+        text = text.replace(RegExp(item, "g"), $.twitterURL(item).outerHTML());
       });
     }
     
     return text;
   };
   
-  $.fn.watchAttribute = function(attribute, triggerName) {
-    var self = this;
-    var cachedAttribute = self.attr(attribute);
-    
-    $.timer(50, function(t) {
-      if(self.attr(attribute) != cachedAttribute) {
-        self.trigger(triggerName);
-        cachedAttribute = self.attr(attribute);
-      }
-    });
-    
-    return self;
+  $.fn.outerHTML = function() {
+    return $("<div/>").append(this.eq(0).clone()).html();
+  };
+})(jQuery);
+
+(function($) {
+  var binder = function(e, dataKey, dataValue) {
+    var $this = $(this),
+        oldValue = $this.data(dataKey),
+        newValue = dataValue,
+        passed = {
+          attr: dataKey,
+          from: oldValue,
+          to:   newValue
+        };
+    if(oldValue !== newValue) { $this.trigger(dataKey + "Changed", passed); $this.trigger("dataChanged", passed); }
   };
   
+  $.fn.observeData = function() {
+    return $(this).each(function() {
+      $(this).bind("setData", binder);
+    });
+  };
 })(jQuery);

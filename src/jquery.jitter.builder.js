@@ -94,29 +94,25 @@
           href: "#",
           id: builder.cssClass
         }).
-        data("unreadCount", 0).
         click(function() { 
           triggerFilterLink(this);
         }).
-        appendTo(target.find(".jitter-filters")).
-        bind("setData", function(e, dataKey, dataVal) {
+        observeData().
+        bind("unreadCountChanged", function(e, data) {
           var $this = $(this);
-          if(dataKey === "unreadCount") {
-            var ct = dataVal;
-            if(!$this.find(".unreadCount").length) {
-              $("<span class='unreadCount'/>").
-                html(ct).
-                appendTo($this);
-            } else {
-              $this.
-                find(".unreadCount").
-                html(ct);
-            }
-            if(dataVal === 0) {
-              $this.find(".unreadCount").remove();
-            }
+          if(!$this.find(".unreadCount").length) {
+            $("<span class='unreadCount'/>").
+              html(data.to).
+              appendTo($this);
+          } else {
+            $this.
+              find(".unreadCount").
+              html(data.to);
           }
-        });
+          if(data.to === 0) { $this.find(".unreadCount").remove(); }
+        }).
+        data("unreadCount", 0).
+        appendTo(target.find(".jitter-filters"));
       
     self.showTweets = showTweets;
     self.showTweetCount = showTweetCount;
