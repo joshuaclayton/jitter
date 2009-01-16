@@ -22,11 +22,11 @@
     
     $(".allTweets").click(function() {
       var $this = $(this);
-      $this.parent().children().removeClass("active");
+      $this.siblings().removeClass("active");
       $this
         .addClass("active")
-        .attr("displayTweets", ".tweet");
-      builder.showTweets(target, $this.attr("displayTweets"), builder.showTweetCount($this));
+        .data("displayTweets", ".tweet");
+      builder.showTweets(target, $this.data("displayTweets"), builder.showTweetCount($this));
     });
     
     return target;

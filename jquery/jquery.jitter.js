@@ -227,12 +227,11 @@ String.prototype.cssClassify = function(sep) {
     
     var triggerFilterLink = function(anchor) {
       var $anchor = $(anchor);
-      $anchor.parent().children().removeClass("active");
       $anchor
+        .siblings().removeClass("active").end()
         .addClass("active")
-        .attr("displayTweets", "." + $anchor.attr("id"));
+        .data("displayTweets", "." + $anchor.attr("id"));
       readFilterLink(anchor);
-      
       showTweets(target, "." + $anchor.attr("id"), showTweetCount($anchor));
     };
     
@@ -288,21 +287,13 @@ String.prototype.cssClassify = function(sep) {
       }
     };
     
-    options.onUpdate = function(tweets) { handleTweets(tweets); };
-    builder.jitter = $.jitter(options);
-    builder.cssClass = builder.jitter.feedClass();
-    builder.feedTitle = builder.jitter.feedTitle();
-    
-    var filterLink = 
+    var buildFilterLink = function() {
       $("<a/>")
         .html(builder.feedTitle)
         .attr({
           href: "#",
-          id: builder.cssClass
-        })
-        .click(function() { 
-          triggerFilterLink(this);
-        })
+          id: builder.cssClass})
+        .click(function() { triggerFilterLink(this); })
         .observeData()
         .bind("unreadCountChanged", function(e, data) {
           var $this = $(this);
@@ -319,7 +310,15 @@ String.prototype.cssClassify = function(sep) {
         })
         .data("unreadCount", 0)
         .appendTo(target.find(".jitter-filters"));
-      
+    };
+    
+    options.onUpdate = function(tweets) { handleTweets(tweets); };
+    builder.jitter = $.jitter(options);
+    builder.cssClass = builder.jitter.feedClass();
+    builder.feedTitle = builder.jitter.feedTitle();
+    
+    buildFilterLink();
+    
     self.showTweets = showTweets;
     self.showTweetCount = showTweetCount;
     return self;
@@ -411,11 +410,11 @@ String.prototype.cssClassify = function(sep) {
     
     $(".allTweets").click(function() {
       var $this = $(this);
-      $this.parent().children().removeClass("active");
+      $this.siblings().removeClass("active");
       $this
         .addClass("active")
-        .attr("displayTweets", ".tweet");
-      builder.showTweets(target, $this.attr("displayTweets"), builder.showTweetCount($this));
+        .data("displayTweets", ".tweet");
+      builder.showTweets(target, $this.data("displayTweets"), builder.showTweetCount($this));
     });
     
     return target;
