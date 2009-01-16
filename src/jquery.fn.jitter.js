@@ -6,10 +6,10 @@
       var filters = $("<div class='jitter-filters span-6'/>");
       
       var filterAll = 
-        $("<a/>").
-          html("All Feeds").
-          attr({href: "#", id: "tweets"}).
-          addClass("active allTweets");
+        $("<a/>")
+          .html("All Feeds")
+          .attr({href: "#", id: "tweets"})
+          .addClass("active allTweets");
       filters.append(filterAll);
       target.prepend(filters);
     }
@@ -23,9 +23,9 @@
     $(".allTweets").click(function() {
       var $this = $(this);
       $this.parent().children().removeClass("active");
-      $this.
-        addClass("active").
-        attr("displayTweets", ".tweet");
+      $this
+        .addClass("active")
+        .attr("displayTweets", ".tweet");
       builder.showTweets(target, $this.attr("displayTweets"), builder.showTweetCount($this));
     });
     

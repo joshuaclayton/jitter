@@ -22,9 +22,9 @@
     var triggerFilterLink = function(anchor) {
       var $anchor = $(anchor);
       $anchor.parent().children().removeClass("active");
-      $anchor.
-        addClass("active").
-        attr("displayTweets", "." + $anchor.attr("id"));
+      $anchor
+        .addClass("active")
+        .attr("displayTweets", "." + $anchor.attr("id"));
       readFilterLink(anchor);
       
       showTweets(target, "." + $anchor.attr("id"), showTweetCount($anchor));
@@ -39,24 +39,24 @@
         
         $.each(tweets, function(index, tweet) {
           var tweetWrapper = 
-            $("<div class='tweet clearfix'/>").
-              addClass(builder.cssClass).
-              addClass("author-" + (tweet.user ? tweet.user.screen_name : tweet.from_user));
+            $("<div class='tweet clearfix'/>")
+              .addClass(builder.cssClass)
+              .addClass("author-" + (tweet.user ? tweet.user.screen_name : tweet.from_user));
           var tweetBody = $("<div class='tweetBody'/>").html($.linkTwitterUsernames(tweet.text));
           var author = 
-            $("<div class='author'/>").
-              append($("<span class='displayName'/>").html($.twitterURL(tweet))).
-              append($.twitterImage(tweet));
+            $("<div class='author'/>")
+              .append($("<span class='displayName'/>").html($.twitterURL(tweet)))
+              .append($.twitterImage(tweet));
           
           var createdAt = 
-            $("<div class='createdAt'></div>").
-              html(new Date(tweet.created_at).toUTCString());
+            $("<div class='createdAt'></div>")
+              .html(new Date(tweet.created_at).toUTCString());
           
-          tweetWrapper.
-            append(author).
-            append(tweetBody).
-            append(createdAt).
-            appendTo(wrapper);
+          tweetWrapper
+            .append(author)
+            .append(tweetBody)
+            .append(createdAt)
+            .appendTo(wrapper);
         });
         
         var tweetElements = $(wrapper.html()).hide();
@@ -88,17 +88,17 @@
     builder.feedTitle = builder.jitter.feedTitle();
     
     var filterLink = 
-      $("<a/>").
-        html(builder.feedTitle).
-        attr({
+      $("<a/>")
+        .html(builder.feedTitle)
+        .attr({
           href: "#",
           id: builder.cssClass
-        }).
-        click(function() { 
+        })
+        .click(function() { 
           triggerFilterLink(this);
-        }).
-        observeData().
-        bind("unreadCountChanged", function(e, data) {
+        })
+        .observeData()
+        .bind("unreadCountChanged", function(e, data) {
           var $this = $(this);
           if(!$this.find(".unreadCount").length) {
             $("<span class='unreadCount'/>").
@@ -110,9 +110,9 @@
               html(data.to);
           }
           if(data.to === 0) { $this.find(".unreadCount").remove(); }
-        }).
-        data("unreadCount", 0).
-        appendTo(target.find(".jitter-filters"));
+        })
+        .data("unreadCount", 0)
+        .appendTo(target.find(".jitter-filters"));
       
     self.showTweets = showTweets;
     self.showTweetCount = showTweetCount;
