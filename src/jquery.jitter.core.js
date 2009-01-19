@@ -1,13 +1,3 @@
-String.prototype.cssClassify = function(sep) {
-  sep = sep || "-";
-  var result = this;
-  return result.replace(/[^\x00-\x7F]+/, '')
-    .replace(/[^\w\-_\+]+/g, sep)
-    .replace(new RegExp(sep + "+"), sep)
-    .replace(new RegExp("^" + sep + "|" + sep + "$"), '')
-    .toLowerCase();
-};
-
 (function($) {
   $.jitter = function(settings) {
     var options = $.extend({}, $.jitter.defaults, settings);
@@ -70,17 +60,17 @@ String.prototype.cssClassify = function(sep) {
     // public instance methods
     var feedClass = function() {
       var feedClassName = options.currentFeed.name;
-      if(options.currentFeed.requiresUsername)  { feedClassName = feedClassName.replace(/\{username\}/, options.username); }
-      if(options.currentFeed.performSearch)     { feedClassName = feedClassName.replace(/\{query\}/, options.query.cssClassify()); }
-      if(options.currentFeed.filteredUsers)     { feedClassName = feedClassName.replace(/\{groupName\}/, options.groupName.cssClassify()); }
+      if(options.currentFeed.requiresUsername)  { feedClassName = feedClassName.interpolate({username: options.username}); }
+      if(options.currentFeed.performSearch)     { feedClassName = feedClassName.interpolate({query: options.query.cssClassify()}); }
+      if(options.currentFeed.filteredUsers)     { feedClassName = feedClassName.interpolate({groupName: options.groupName.cssClassify()}); }
       return feedClassName;
     };
 
     var feedTitle = function() {
       var feedTitleName = options.currentFeed.title;
-      if(options.currentFeed.requiresUsername)  { feedTitleName = feedTitleName.replace(/\{username\}/, options.username); }
-      if(options.currentFeed.performSearch)     { feedTitleName = feedTitleName.replace(/\{query\}/, options.query); }
-      if(options.currentFeed.filteredUsers)     { feedTitleName = feedTitleName.replace(/\{groupName\}/, options.groupName); }
+      if(options.currentFeed.requiresUsername)  { feedTitleName = feedTitleName.interpolate({username: options.username}); }
+      if(options.currentFeed.performSearch)     { feedTitleName = feedTitleName.interpolate({query: options.query}); }
+      if(options.currentFeed.filteredUsers)     { feedTitleName = feedTitleName.interpolate({groupName: options.groupName}); }
       return feedTitleName;
     };
 
@@ -90,14 +80,14 @@ String.prototype.cssClassify = function(sep) {
         url: buildURL(options.currentFeed),
         dataType: "jsonp",
         success: function(data) {
-          if(data.results) { data = data.results; }                                                 // set data to data from search results
-          var originalSinceID = jitter.sinceID,                                                     // freeze sinceID to see if sinceID was set from a previous request
+          if(data.results) { data = data.results; }                                                   // set data to data from search results
+          var originalSinceID = jitter.sinceID,                                                       // freeze sinceID to see if sinceID was set from a previous request
               updatingExistingTweets = !!jitter.sinceID;
 
-          if(options.currentFeed.trackSince === true && data[0]) { jitter.sinceID = data[0].id; }    // set sinceID to the 'newest' tweet in the results
-          if(options.onUpdate && typeof(options.onUpdate) == "function"){ options.onUpdate(data); } // trigger the onUpdate callback
+          if(options.currentFeed.trackSince === true && data[0]) { jitter.sinceID = data[0].id; }     // set sinceID to the 'newest' tweet in the results
+          if(options.onUpdate && typeof(options.onUpdate) == "function") { options.onUpdate(data); }  // trigger the onUpdate callback
 
-          if(updatingExistingTweets) { data = data.reverse(); }                                     // reverse dataset for unshift
+          if(updatingExistingTweets) { data = data.reverse(); }                                       // reverse dataset for unshift
 
           $.each(data, function(index, item) {
             var modify = updatingExistingTweets ? jitter.tweets.unshift(item) : jitter.tweets.push(item);
@@ -107,9 +97,9 @@ String.prototype.cssClassify = function(sep) {
     };
     
     // point to internals
-    self.tweets = function() { return jitter.tweets; };
-    self.updateTweets = function() { updateTweets(); };
-    self.options = function() { return options; };
+    self.tweets       = function() { return jitter.tweets; };
+    self.updateTweets = function() { return updateTweets(); };
+    self.options      = function() { return options; };
     
     // make feed info public
     self.feedClass = feedClass;
@@ -124,10 +114,11 @@ String.prototype.cssClassify = function(sep) {
       return;
     }
     
-    setupTimer();
+    self.start = function() {
+      updateTweets();
+      setupTimer();
+    };
     
-    updateTweets();
-
     return self;
   };
 })(jQuery);
