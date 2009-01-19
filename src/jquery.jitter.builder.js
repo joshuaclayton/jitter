@@ -5,8 +5,8 @@
     options = options || {};
     
     var showTweets = function(tweetsParent, tweetClass, numberOfTweetsToDisplay) {
-      tweetsParent.find(".tweet").hide();
-      tweetsParent.find(tweetClass + ":lt(" + numberOfTweetsToDisplay + ")").show();
+      tweetsParent.find(".tweet:visible").hide();
+      tweetsParent.find(tweetClass + ":lt(" + numberOfTweetsToDisplay + "):not(.no-show)").show();
     };
     
     var showTweetCount = function(anchor) {
@@ -134,7 +134,7 @@
       
       $("<a/>")
         .html("All Feeds")
-        .attr({href: "#", id: "tweets"})
+        .attr({href: "#", id: "tweet"})
         .addClass("active allTweets")
         .click(function () { triggerFilterLink(this); return false; })
         .appendTo(filters);

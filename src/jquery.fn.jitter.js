@@ -8,35 +8,62 @@
     
     $.jitter.builder(target, options);
     
-    $(".tweet").live("click", function(e) {
-      $(this).siblings().removeClass("current");
-      $(this).addClass("read").addClass("current");
-      e.stopPropagation();
-    });
-    
-    var triggerTweet = function(t) {
-      t.trigger("click");
-      $(document).scrollTo($(".tweet.current"), 500);
-    };
-    
-    $(document).keydown(function(e) {
-      var currentTweet = $(".tweet.current").length;
-      if(e.which == 72) { // h
-        $(".tweet.read").hide();
-      } else if(e.which == 85) { // u
-        $(".tweet.read:hidden").show();
-      } else if(e.which == 79) {// o
-        window.location = $(".tweet .author .displayName a").attr("href");
-      } else if(e.which == 74) { // j
-        triggerTweet($(".tweet:visible:eq(0)"));
-      } else if(e.which == 73) { // i
-        triggerTweet($(".tweet.current").prev(":visible"));
-      } else if(e.which == 76) { // l
-        triggerTweet($(".tweet:visible:last"));
-      } else if(e.which == 75) { // k
-        triggerTweet($(".tweet.current").next(":visible"));
+    (function() {
+      $(".tweet").live("click", function(e) {
+        $(this).siblings().removeClass("current");
+        $(this).addClass("read").addClass("current");
+      });
+
+      var triggerTweet = function(t) {
+        t.trigger("click");
+        $(document).scrollTo($(".tweet.current"), 500);
+      };
+
+      var hideVisibleTweets = function() { $(".tweet.read").addClass("no-show"); $(".tweet.no-show:visible").hide(); };
+      var showHiddenTweets = function() { $(".tweet.no-show").show().removeClass("no-show"); };
+      var openTweetAuthorTwitterPage = function() { window.open($(".tweet.current .author .displayName a").attr("href"), "_blank"); };
+      var openTweetLinkedURLs = function() { 
+        $(".tweet.current .tweetBody a").each(function(idx, anchor) {
+          window.open($(anchor).attr("href"), "_blank");
+        });
+      };
+      var setCurrentToFirstTweet = function() { triggerTweet($(".tweet:visible:first")); };
+      var setCurrentToNextTweet = function() { triggerTweet($(".tweet.current").next(":visible")); };
+      var setCurrentToPrevTweet = function() { triggerTweet($(".tweet.current").prev(":visible")); };
+      var setCurrentToLastTweet = function() { triggerTweet($(".tweet:visible:last")); };
+
+      if(!$(document).data("keypressAssigned")) {
+        $(document).keydown(function(e) {
+          var currentTweet = $(".tweet.current:visible").length;
+          var keyPressed = String.fromCharCode(e.which);
+          if(keyPressed == "H") {
+            hideVisibleTweets();
+          } else if(keyPressed == "U") {
+            showHiddenTweets();
+          } else if(keyPressed == "O") {
+            openTweetAuthorTwitterPage();
+          } else if(keyPressed == "P") {
+            openTweetLinkedURLs();
+          } else if(keyPressed == "J") {
+            setCurrentToFirstTweet();
+          } else if(keyPressed == "I") {
+            setCurrentToPrevTweet();
+          } else if(keyPressed == "L") {
+            setCurrentToLastTweet();
+          } else if(keyPressed == "K") {
+            setCurrentToNextTweet();
+          }
+          var number = new Number(keyPressed);
+          // alert(number);
+          // alert(e.which);
+          if(number) {
+            var anch = $(".jitter-filters a:eq(" + number + ")");
+            if(anch) { anch.trigger("click"); }
+          }
+        });
+        $(document).data("keypressAssigned", true);
       }
-    });
+    })();
     
     return target;
   };
