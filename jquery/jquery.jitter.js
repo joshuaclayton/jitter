@@ -626,7 +626,7 @@ String.prototype.strip = function() {
         $(this)
           .siblings().removeClass("current").end()
           .addClass("read").addClass("current");
-        $(document).scrollTo($(".tweet.current"), 400);
+        $(document).scrollTo($(".tweet.current"), 200);
       });
       
       if(!$(document).data("keypressAssigned")) {

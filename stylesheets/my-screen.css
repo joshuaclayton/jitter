@@ -1,3 +1,7 @@
+.container noscript h1 {text-align: center; font-weight: bold; text-transform: uppercase; color: #a33; padding: 1em 0 .5em; font-size: 3.25em;}
+.container noscript p { font-size: 2em; color: #666; font-weight: bold; text-align: justify; letter-spacing: .035em;}
+.container noscript a {color: #333;}
+
 input.hint, textarea.hint {color: #888; text-transform: uppercase;}
 
 .jitter-filters { background: #ccc; position: fixed; top: 0;}

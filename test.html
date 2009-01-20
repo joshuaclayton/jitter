@@ -27,11 +27,21 @@
     <script type="text/javascript">
       $(document).ready(function() {
         $("#content").jitter();
+        
       });
     </script>
   </head>
   <body>
     <div class="container">
+      <noscript>
+        <h1>Javascript Must be Enabled to Use <em>Jitter</em></h1>
+        <hr/>
+        <div class="span-22 prepend-1 append-1">
+          <p>This web application relies on Javascript and the <a href="http://jquery.com">jQuery library</a> to request information from <a href="http://twitter.com">Twitter</a>.  Without Javascript enabled, no data can be requested (and therefor shown to you, the user).</p>
+          <p>Please, turn on Javascript; if you don't, then please leave.</p>
+        </div>
+        <hr/>
+      </noscript>
       <div id="content"></div>
     </div>
   </body>
