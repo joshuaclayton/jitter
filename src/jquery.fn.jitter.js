@@ -73,7 +73,6 @@
         $(document).data("keypressAssigned", true);
       }
     })();
-    
     return target;
   };
 })(jQuery);
