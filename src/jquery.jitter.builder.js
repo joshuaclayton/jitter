@@ -70,18 +70,21 @@
       }
     };
     
-    options.onUpdate = function(tweets) { handleTweets(tweets); };
+    // initialize
+    (function() {
+      options.onUpdate = function(tweets) { handleTweets(tweets); };
+      builder.jitter = $.jitter(options);
+      builder.cssClass = function() { return builder.jitter.feedClass(); };
+      builder.feedTitle = function() { return builder.jitter.feedTitle(); };
+      builder.showTweets = showTweets;
+      builder.showTweetCount = showTweetCount;
+
+      var filterBuilder = $.jitter.builder.filter(target, builder);
+      filterBuilder.buildFilterLink();
+      $.jitter.builder.forms(target, builder);
+      builder.jitter.start();
+    })();
     
-    builder.jitter = $.jitter(options);
-    builder.cssClass = function() { return builder.jitter.feedClass(); };
-    builder.feedTitle = function() { return builder.jitter.feedTitle(); };
-    builder.showTweets = showTweets;
-    builder.showTweetCount = showTweetCount;
-    
-    var filterBuilder = $.jitter.builder.filter(target, builder);
-    filterBuilder.buildFilterLink();
-    
-    builder.jitter.start();
     return self;
   };
   
@@ -101,14 +104,13 @@
         .data("displayTweets", "." + $anchor.attr("id"));
       readFilterLink(anchor);
       builder.showTweets(target, $anchor.data("displayTweets"), builder.showTweetCount($anchor));
+      $(document).scrollTo($(".tweet:visible:eq(0)"), 200);
     };
     
-    var buildFilterLink = function() {
+    self.buildFilterLink = function() {
       $("<a/>")
         .html(builder.feedTitle())
-        .attr({
-          href: "#",
-          id: builder.cssClass()})
+        .attr({href: "#", id: builder.cssClass()})
         .click(function() { triggerFilterLink(this); return false; })
         .observeData()
         .bind("unreadCountChanged", function(e, data) {
@@ -128,7 +130,6 @@
         .appendTo(target.find(".jitter-filters"));
     };
     
-    
     if(!target.find(".jitter-filters").length) {
       var filters = $("<div class='jitter-filters span-6'/>").html("<h1>Jitter!</h1>");
       
@@ -141,7 +142,71 @@
       target.prepend(filters);
     }
     
-    self.buildFilterLink = buildFilterLink;
     return self;
+  };
+  
+  $.jitter.builder.forms = function(target, builder) {
+    if(target.find(".forms").length) { return; }
+    
+    var wrapper = $("<div class='forms'/>");
+    
+    var buildFeedForm = function(feed) {
+      var form = $("<form/>")
+        .attr({action: "#"})
+        .submit(function() {
+          var $this = $(this);
+          var username  = $this.find("input[name=username]").val(),
+              password  = $this.find("input[name=password]").val(),
+              groupName = $this.find("input[name=groupName]").val(),
+              users     = $this.find("input[name=users]").val(),
+              query     = $this.find("input[name=query]").val();
+          
+          if(users) { users = users.split(/ *, */); }
+          
+          var options = {};
+          
+          if(feed.requiresUsername) { options.username = username; }
+          if(feed.requiresPassword) { options.password = password; }
+          if(feed.performSearch)    { options.query = query; }
+          if(feed.filteredUsers)    { options.groupName = groupName; options.users = users; }
+
+          options.feed = feed;
+          target.jitter(options);
+          $this.find("input:not([type=submit])").val("");
+          return false;
+        });
+      
+      if(feed.requiresUsername) {
+        $("<label for='username'>Username</label><input type='text' name='username' />").appendTo(form);
+      }
+      
+      if(feed.requiresPassword) {
+        $("<label for='password'>Password</label><input type='password' name='password' />").appendTo(form);
+      }
+      
+      if(feed.performSearch) {
+        $("<label for='query'>Search</label><input type='text' name='query' />").appendTo(form);
+      }
+      
+      if(feed.filteredUsers) {
+        $("<label for='groupName'>Group Name</label><input type='text' name='groupName' />").appendTo(form);
+        $("<label for='users'>Users</label><input type='text' name='users' />").appendTo(form);
+      }
+      
+      $("<input type='submit' value='Add Feed' />").appendTo(form);
+      
+      $("<div/>")
+        .append($("<h2/>").html(feed.simpleTitle))
+        .append(form)
+        .appendTo(wrapper);
+    };
+    
+    $.each($.jitter.feeds, function(index, item) {
+      if(item.simpleTitle) {
+        buildFeedForm(item);
+      }
+    });
+    
+    target.append(wrapper);
   };
 })(jQuery);

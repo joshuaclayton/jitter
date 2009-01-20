@@ -6,21 +6,29 @@
       target.append($("<div class='tweets prepend-6 span-18 last'/>"));
     }
     
-    $.jitter.builder(target, options);
+    var builder = $.jitter.builder(target, options);
     
     (function() {
       $(".tweet").live("click", function(e) {
         $(this).siblings().removeClass("current");
         $(this).addClass("read").addClass("current");
       });
-
+      
+      var currentFilteredClass = function() {
+        var potentialFilterClass = target.find(".jitter-filters a.active").attr("id");
+        if(potentialFilterClass) {
+          return "." + potentialFilterClass;
+        }
+        return "";
+      };
+      
       var triggerTweet = function(t) {
         t.trigger("click");
-        $(document).scrollTo($(".tweet.current"), 500);
+        $(document).scrollTo($(".tweet.current"), 200);
       };
 
-      var hideVisibleTweets = function() { $(".tweet.read").addClass("no-show"); $(".tweet.no-show:visible").hide(); };
-      var showHiddenTweets = function() { $(".tweet.no-show").show().removeClass("no-show"); };
+      var hideVisibleTweets = function() { $(".tweet.read" + currentFilteredClass()).addClass("no-show"); $(".tweet.no-show:visible").hide(); };
+      var showHiddenTweets = function() { $(".tweet.no-show" + currentFilteredClass()).show().removeClass("no-show"); };
       var openTweetAuthorTwitterPage = function() { window.open($(".tweet.current .author .displayName a").attr("href"), "_blank"); };
       var openTweetLinkedURLs = function() { 
         $(".tweet.current .tweetBody a").each(function(idx, anchor) {
@@ -34,8 +42,11 @@
 
       if(!$(document).data("keypressAssigned")) {
         $(document).keydown(function(e) {
+          if (/(input|textarea|select)/i.test(e.target.nodeName)) { return; } 
+          
           var currentTweet = $(".tweet.current:visible").length;
           var keyPressed = String.fromCharCode(e.which);
+          
           if(keyPressed == "H") {
             hideVisibleTweets();
           } else if(keyPressed == "U") {
@@ -54,8 +65,6 @@
             setCurrentToNextTweet();
           }
           var number = new Number(keyPressed);
-          // alert(number);
-          // alert(e.which);
           if(number) {
             var anch = $(".jitter-filters a:eq(" + number + ")");
             if(anch) { anch.trigger("click"); }

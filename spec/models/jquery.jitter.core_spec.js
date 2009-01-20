@@ -36,6 +36,7 @@ Screw.Unit(function() {
         var timerCalled = false;
         $.timer = function() { timerCalled = true; return {stop: function() {}, reset: function() {}}; };
         jitter = $.jitter();
+        jitter.start();
         expect(timerCalled).to(be_true);
       });
       
@@ -62,6 +63,7 @@ Screw.Unit(function() {
       
       it("should be assigned a 'jsonp' data type", function() {
         jitter = $.jitter();
+        jitter.start();
         expect(options.dataType).to(equal, "jsonp");
       });
       
@@ -81,10 +83,13 @@ Screw.Unit(function() {
       
       it("should generate the correct URLs and params", function() {
         jitter = $.jitter({feed: "search", query: "blueprint css"});
+        jitter.start();
         expect(options.url).to(equal, "http://search.twitter.com/search.json?q=blueprint+css");
         jitter = $.jitter({feed: "groupTimeline", users: ["person1", "person2"], groupName: "Test Group"});
+        jitter.start();
         expect(options.url).to(equal, "http://search.twitter.com/search.json?q=from%3Aperson1+OR+from%3Aperson2");
         jitter = $.jitter({feed: "friendsTimeline", username: "name", password: "pass"});
+        jitter.start();
         expect(options.url).to(equal, "http://name:pass@twitter.com/statuses/friends_timeline.json");
       });
     });
@@ -136,6 +141,7 @@ Screw.Unit(function() {
       
       it("should reassign search results' data.results property to the data object so it can parse correctly", function(){
         jitter = $.jitter({feed: "search", query: "twitter", onUpdate: function(t) {}});
+        jitter.start();
         options.success(searchResponse);
         expect(jitter.tweets()).to(equal, searchResponse.results);
       });
@@ -144,6 +150,7 @@ Screw.Unit(function() {
         it("should assign sinceID and keep track of it", function() {
           var sinceID = standardResponse[0].id;
           jitter = $.jitter({feed: "userTimeline", username: "twitter", onUpdate: function(t) {}});
+          jitter.start();
           options.success(standardResponse);
           expect(jitter.tweets()).to(equal, standardResponse);
           jitter.updateTweets();
@@ -156,6 +163,8 @@ Screw.Unit(function() {
           var sinceID = standardResponse[0].id,
               sinceID2 = standardResponse[1].id;
           jitter = $.jitter({feed: "userTimeline", username: "twitter", onUpdate: function(t) {}});
+          jitter.start();
+          
           options.success(standardResponse);
           jitter.updateTweets();
           
@@ -169,6 +178,7 @@ Screw.Unit(function() {
         it("shouldn't change sinceID without additional data in a subsequent callback", function() {
           var sinceID = standardResponse[0].id;
           jitter = $.jitter({feed: "userTimeline", username: "twitter", onUpdate: function(t) {}});
+          jitter.start();
           options.success(standardResponse);
           jitter.updateTweets();
           
@@ -183,6 +193,7 @@ Screw.Unit(function() {
       it("should call the custom callback onUpdate", function() {
         var updateCalled = false;
         jitter = $.jitter({feed: "search", query: "twitter", onUpdate: function(t) { updateCalled = true; }});
+        jitter.start();
         options.success(searchResponse);
         expect(updateCalled).to(be_true);
       });
@@ -191,6 +202,7 @@ Screw.Unit(function() {
         var tweets1 = [{id: 2}, {id: 1}], 
             tweets2 = [{id: 4}, {id: 3}];
         jitter = $.jitter({feed: "search", query: "twitter", onUpdate: function(t) {}});
+        jitter.start();
         options.success(tweets1);
         expect(jitter.tweets()).to(equal, tweets1);
         options.success(tweets2);

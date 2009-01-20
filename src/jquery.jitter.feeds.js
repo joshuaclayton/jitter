@@ -3,6 +3,7 @@
     publicTimeline: {
       url: "http://twitter.com/statuses/public_timeline.json",
       name: "public",
+      simpleTitle: "Public Timeline",
       title: "Public Timeline"
     },
     friendsTimeline: {
@@ -11,6 +12,7 @@
       requiresPassword: true,
       trackSince: true,
       name: "friends-{username}",
+      simpleTitle: "Friend Timeline",
       title: "Friend Timeline for {username}"
     },
     groupTimeline: {
@@ -18,6 +20,7 @@
       trackSince: true,
       filteredUsers: true,
       name: "group-{groupName}",
+      simpleTitle: "Group Timeline",
       title: "{groupName} Timeline"
     },
     userTimeline: {
@@ -25,6 +28,7 @@
       requiresUsername: true,
       trackSince: true,
       name: "user-{username}",
+      simpleTitle: "User Timeline",
       title: "Timeline for {username}"
     },
     directMessages: {
@@ -33,6 +37,7 @@
       requiresUsername: true,
       requiresPassword: true,
       name: "direct-message-{username}",
+      simpleTitle: "Direct Messages",
       title: "Direct Messages for {username}"
     },
     rateLimitStatus: {
@@ -43,6 +48,7 @@
       performSearch: true,
       trackSince: true,
       name: "search-{query}",
+      simpleTitle: "Search Feed",
       title: "Search Results for '{query}'"
     }
   };

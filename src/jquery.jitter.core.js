@@ -1,7 +1,12 @@
 (function($) {
   $.jitter = function(settings) {
     var options = $.extend({}, $.jitter.defaults, settings);
-    options.currentFeed = $.jitter.feeds[options.feed];
+    if(typeof(options.feed) === "string") {
+      options.currentFeed = $.jitter.feeds[options.feed];
+    } else {
+      options.currentFeed = options.feed;
+    }
+    
     var updateTweets = function() {};
     
     // wrapper for all private instance variables
@@ -22,8 +27,10 @@
     var buildURL = function(feedItem, urlOptions) {
       urlOptions = urlOptions || {};
       var url = urlOptions.url || feedItem.url;
-      if(feedItem.requiresUsername) { url = url.replace(/\{username\}/, urlOptions.username || options.username); }
-      if(feedItem.requiresPassword) { url = url.replace(/\{password\}/, urlOptions.password || options.password); }
+      var newOptions = $.extend({}, options, urlOptions);
+      
+      if(feedItem.requiresUsername) { url = url.interpolate({username: newOptions.username}); }
+      if(feedItem.requiresPassword) { url = url.interpolate({password: newOptions.password}); }
 
       var queryString = $.param(buildRequestParams());
       if(queryString.length) { url += "?" + queryString; }
@@ -51,7 +58,7 @@
           jitter.timer.stop();
         };
 
-        self.start = function() {
+        self.restart = function() {
           jitter.timer.reset(calculateRefreshRate());
         };
       }
