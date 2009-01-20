@@ -20,6 +20,12 @@ String.prototype.interpolate = function(obj) {
   return result;
 };
 
+String.prototype.strip = function() {
+  var result = this;
+  result = result.replace(/^ +| +$/g, '');
+  return result;
+};
+
 (function($) {
   $.twitter = {
     urls: {
@@ -79,6 +85,30 @@ String.prototype.interpolate = function(obj) {
 (function($) {
   $.fn.outerHTML = function() {
     return $("<div/>").append(this.eq(0).clone()).html();
+  };
+  
+  $.fn.defaultValueActsAsHint = function() {
+    var handleItem = function(idx, item) {
+      var $item = $(item);
+      $item
+        .data("defaultValue", $item.val())
+        .addClass("hint")
+        .focus(function() {
+          if($(this).data("defaultValue") != $(this).val()) { return; }
+          $(this).removeClass("hint").val("");
+        }).blur(function() {
+          if($(this).val().strip() != "") { return; }
+          $(this).addClass("hint").val($(this).data("defaultValue"));
+        });
+    };
+    
+    var $inputs = $("<div></div>").append(this).find("input");
+    var $textareas = $("<div></div>").append(this).find("textarea");
+    
+    $.each($inputs, handleItem);
+    $.each($textareas, handleItem);
+    
+    return this;
   };
 })(jQuery);
 
@@ -394,6 +424,7 @@ String.prototype.interpolate = function(obj) {
       var filterBuilder = $.jitter.builder.filter(target, builder);
       filterBuilder.buildFilterLink();
       $.jitter.builder.forms(target, builder);
+      $.jitter.builder.cheatsheet(target);
       builder.jitter.start();
     })();
     
@@ -424,6 +455,12 @@ String.prototype.interpolate = function(obj) {
         .html(builder.feedTitle())
         .attr({href: "#", id: builder.cssClass()})
         .click(function() { triggerFilterLink(this); return false; })
+        .dblclick(function() { 
+          target.find("." + builder.cssClass()).remove();
+          $(this).remove(); 
+          builder.jitter.stop();
+          target.find(".jitter-filters a:first").trigger("click");
+        })
         .observeData()
         .bind("unreadCountChanged", function(e, data) {
           var $this = $(this);
@@ -489,26 +526,26 @@ String.prototype.interpolate = function(obj) {
         });
       
       if(feed.requiresUsername) {
-        $("<label for='username'>Username</label><input type='text' name='username' />").appendTo(form);
+        $("<label for='username'>Username</label><input type='text' name='username' class='text span-4' value='Enter a Username' />").defaultValueActsAsHint().appendTo(form);
       }
       
       if(feed.requiresPassword) {
-        $("<label for='password'>Password</label><input type='password' name='password' />").appendTo(form);
+        $("<label for='password'>Password</label><input type='password' name='password' class='text span-4' value='Password'/>").defaultValueActsAsHint().appendTo(form);
       }
       
       if(feed.performSearch) {
-        $("<label for='query'>Search</label><input type='text' name='query' />").appendTo(form);
+        $("<label for='query'>Search</label><input type='text' name='query' class='text span-4' value='Enter a Search Term' />").defaultValueActsAsHint().appendTo(form);
       }
       
       if(feed.filteredUsers) {
-        $("<label for='groupName'>Group Name</label><input type='text' name='groupName' />").appendTo(form);
-        $("<label for='users'>Users</label><input type='text' name='users' />").appendTo(form);
+        $("<label for='groupName'>Group Name</label><input type='text' name='groupName' class='text span-4' value='Name of Your Group' />").defaultValueActsAsHint().appendTo(form);
+        $("<label for='users'>Users</label><input type='text' name='users' class='text span-4' value='Comma-delimited List of Users' />").defaultValueActsAsHint().appendTo(form);
       }
       
       $("<input type='submit' value='Add Feed' />").appendTo(form);
       
-      $("<div/>")
-        .append($("<h2/>").html(feed.simpleTitle))
+      $("<div class='jitterForm'/>")
+        .append($("<h3/>").html(feed.simpleTitle))
         .append(form)
         .appendTo(wrapper);
     };
@@ -520,6 +557,34 @@ String.prototype.interpolate = function(obj) {
     });
     
     target.append(wrapper);
+  };
+  
+  $.jitter.builder.cheatsheet = function(target) {
+    if(target.find('.cheatsheet').length) { return; }
+    
+    $("\
+      <div class='cheatsheet'>\
+        <h3>Keyboard Shortcuts</h3>\
+        <dl>\
+          <dt>I</dt>\
+          <dd>Navigate to previous tweet</dd>\
+          <dt>K</dt>\
+          <dd>Navigate to next tweet</dd>\
+          <dt>J</dt>\
+          <dd>Navigate to first tweet</dd>\
+          <dt>L</dt>\
+          <dd>Navigate to last tweet</dd>\
+          <dt>H</dt>\
+          <dd>Hide read tweets</dd>\
+          <dt>U</dt>\
+          <dd>Show hidden read tweets</dd>\
+          <dt>O</dt>\
+          <dd>Open user's Twitter page (in new window)</dd>\
+          <dt>P</dt>\
+          <dd>Open all links within tweet body (including @replies) (in new window)</dd>\
+        </dl>\
+      </div>\
+    ").appendTo(target);
   };
 })(jQuery);(function($) {
   $.fn.jitter = function(options) {

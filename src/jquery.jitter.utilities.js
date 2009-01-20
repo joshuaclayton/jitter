@@ -20,6 +20,12 @@ String.prototype.interpolate = function(obj) {
   return result;
 };
 
+String.prototype.strip = function() {
+  var result = this;
+  result = result.replace(/^ +| +$/g, '');
+  return result;
+};
+
 (function($) {
   $.twitter = {
     urls: {
@@ -79,6 +85,30 @@ String.prototype.interpolate = function(obj) {
 (function($) {
   $.fn.outerHTML = function() {
     return $("<div/>").append(this.eq(0).clone()).html();
+  };
+  
+  $.fn.defaultValueActsAsHint = function() {
+    var handleItem = function(idx, item) {
+      var $item = $(item);
+      $item
+        .data("defaultValue", $item.val())
+        .addClass("hint")
+        .focus(function() {
+          if($(this).data("defaultValue") != $(this).val()) { return; }
+          $(this).removeClass("hint").val("");
+        }).blur(function() {
+          if($(this).val().strip() != "") { return; }
+          $(this).addClass("hint").val($(this).data("defaultValue"));
+        });
+    };
+    
+    var $inputs = $("<div></div>").append(this).find("input");
+    var $textareas = $("<div></div>").append(this).find("textarea");
+    
+    $.each($inputs, handleItem);
+    $.each($textareas, handleItem);
+    
+    return this;
   };
 })(jQuery);
 

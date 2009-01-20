@@ -1,3 +1,5 @@
+input.hint, textarea.hint {color: #888; text-transform: uppercase;}
+
 .jitter-filters { background: #ccc; position: fixed; top: 0;}
 .jitter-filters h1 { text-align: center; border-bottom: 1px solid #aaa; margin-bottom: 0; padding: .25em 0; font-variant: small-caps; letter-spacing: .05em;}
 .jitter-filters a {display: block; padding: .5em .75em; text-decoration: none; position: relative; border-bottom: 1px solid #aaa; border-top: 1px solid #ddd;}
@@ -22,3 +24,6 @@
 .tweet .createdAt {font-size: .9em;}
 .tweet .author .displayName {font-weight: bold; font-size: 1.2em;}
 .tweet .tweetBody {font-size: 1.5em; font-weight: 500;}
+
+.jitterForm label {display: block;}
+.jitterForm {border-bottom: 1px solid #ccc; padding: 1em 0;}
