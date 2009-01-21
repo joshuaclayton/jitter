@@ -132,21 +132,11 @@ String.prototype.strip = function() {
   };
 })(jQuery);(function($) {
   $.jitter = function(settings) {
-    var options = $.extend({}, $.jitter.defaults, settings);
-    if(typeof(options.feed) === "string") {
-      options.currentFeed = $.jitter.feeds[options.feed];
-    } else {
-      options.currentFeed = options.feed;
-    }
+    var options = $.extend({}, $.jitter.defaults, settings),
+        updateTweets = function() {},
+        jitter = {tweets: []};
+    options.currentFeed = typeof(options.feed) === "string" ? $.jitter.feeds[options.feed] : options.feed;
     
-    var updateTweets = function() {};
-    
-    // wrapper for all private instance variables
-    var jitter = {tweets: []};
-
-    // public object
-    var self = {};
-
     // private methods
     var buildRequestParams = function() {
       var requestParams = {};
@@ -180,22 +170,6 @@ String.prototype.strip = function() {
       }
     };
     
-    var setupTimer = function() {
-      if(!jitter.timer) {
-        jitter.timer = $.timer(calculateRefreshRate(), function(t) {
-          updateTweets();
-        });
-
-        self.stop = function() {
-          jitter.timer.stop();
-        };
-
-        self.restart = function() {
-          jitter.timer.reset(calculateRefreshRate());
-        };
-      }
-    };
-    
     // public instance methods
     var feedClass = function() {
       var feedClassName = options.currentFeed.name;
@@ -223,7 +197,7 @@ String.prototype.strip = function() {
           var originalSinceID = jitter.sinceID,                                                       // freeze sinceID to see if sinceID was set from a previous request
               updatingExistingTweets = !!jitter.sinceID;
 
-          if(options.currentFeed.trackSince === true && data[0]) { jitter.sinceID = data[0].id; }     // set sinceID to the 'newest' tweet in the results
+          if(!!options.currentFeed.trackSince && data[0]) { jitter.sinceID = data[0].id; }            // set sinceID to the 'newest' tweet in the results
           if(options.onUpdate && typeof(options.onUpdate) == "function") { options.onUpdate(data); }  // trigger the onUpdate callback
 
           if(updatingExistingTweets) { data = data.reverse(); }                                       // reverse dataset for unshift
@@ -234,16 +208,7 @@ String.prototype.strip = function() {
         }
       });
     };
-    
-    // point to internals
-    self.tweets       = function() { return jitter.tweets; };
-    self.updateTweets = function() { return updateTweets(); };
-    self.options      = function() { return options; };
-    
-    // make feed info public
-    self.feedClass = feedClass;
-    self.feedTitle = feedTitle;
-    
+
     try {
       if(options.currentFeed == $.jitter.feeds.search && !options.query) { throw($.jitter.errors.invalidSearchRequest); }
       if(options.currentFeed == $.jitter.feeds.groupTimeline && (!options.users || (options.users && !options.users.length) || !options.groupName)) { throw($.jitter.errors.invalidGroupTimelineRequest); }
@@ -252,13 +217,22 @@ String.prototype.strip = function() {
       handleError(error);
       return;
     }
-    
-    self.start = function() {
-      updateTweets();
-      setupTimer();
+
+    return {
+      feedClass: feedClass,
+      feedTitle: feedTitle,
+      tweets: function() { return jitter.tweets; },
+      updateTweets: function() { return updateTweets(); },
+      options: function() { return options; },
+      start: function() {
+        updateTweets();
+        if(!jitter.timer) {
+          jitter.timer = $.timer(calculateRefreshRate(), function(t) { updateTweets(); });
+          this.stop = function() { jitter.timer.stop(); };
+          this.restart = function() { jitter.timer.reset(calculateRefreshRate()); };
+        }
+      }
     };
-    
-    return self;
   };
 })(jQuery);(function($) {
   $.jitter.defaults = {
@@ -432,8 +406,6 @@ String.prototype.strip = function() {
   };
   
   $.jitter.builder.filter = function(target, builder) {
-    var self = {};
-    
     var readFilterLink = function(anchor) {
       var $anchor = $(anchor);
       $anchor.data("unreadCount", 0);
@@ -450,48 +422,50 @@ String.prototype.strip = function() {
       $(document).scrollTo($(".tweet:visible:eq(0)"), 200);
     };
     
-    self.buildFilterLink = function() {
-      $("<a/>")
-        .html(builder.feedTitle())
-        .attr({href: "#", id: builder.cssClass()})
-        .click(function() { triggerFilterLink(this); return false; })
-        .dblclick(function() { 
-          target.find("." + builder.cssClass()).remove();
-          $(this).remove(); 
-          builder.jitter.stop();
-          target.find(".jitter-filters a:first").trigger("click");
-        })
-        .observeData()
-        .bind("unreadCountChanged", function(e, data) {
-          var $this = $(this);
-          if(!$this.find(".unreadCount").length) {
-            $("<span class='unreadCount'/>").
-              html(data.to).
-              appendTo($this);
-          } else {
-            $this.
-              find(".unreadCount").
-              html(data.to);
-          }
-          if(data.to === 0) { $this.find(".unreadCount").remove(); }
-        })
-        .data("unreadCount", 0)
-        .appendTo(target.find(".jitter-filters"));
+    (function() {
+      if(!target.find(".jitter-filters").length) {
+        var filters = $("<div class='jitter-filters span-6'/>").html("<h1>Jitter!</h1>");
+
+        $("<a/>")
+          .html("All Feeds")
+          .attr({href: "#", id: "tweet"})
+          .addClass("active allTweets")
+          .click(function () { triggerFilterLink(this); return false; })
+          .appendTo(filters);
+        target.prepend(filters);
+      }
+    })();
+    
+    return {
+      buildFilterLink: function() {
+        $("<a/>")
+          .html(builder.feedTitle())
+          .attr({href: "#", id: builder.cssClass()})
+          .click(function() { triggerFilterLink(this); return false; })
+          .dblclick(function() { 
+            target.find("." + builder.cssClass()).remove();
+            $(this).remove(); 
+            builder.jitter.stop();
+            target.find(".jitter-filters a:first").trigger("click");
+          })
+          .observeData()
+          .bind("unreadCountChanged", function(e, data) {
+            var $this = $(this);
+            if(!$this.find(".unreadCount").length) {
+              $("<span class='unreadCount'/>").
+                html(data.to).
+                appendTo($this);
+            } else {
+              $this.
+                find(".unreadCount").
+                html(data.to);
+            }
+            if(data.to === 0) { $this.find(".unreadCount").remove(); }
+          })
+          .data("unreadCount", 0)
+          .appendTo(target.find(".jitter-filters"));
+      }
     };
-    
-    if(!target.find(".jitter-filters").length) {
-      var filters = $("<div class='jitter-filters span-6'/>").html("<h1>Jitter!</h1>");
-      
-      $("<a/>")
-        .html("All Feeds")
-        .attr({href: "#", id: "tweet"})
-        .addClass("active allTweets")
-        .click(function () { triggerFilterLink(this); return false; })
-        .appendTo(filters);
-      target.prepend(filters);
-    }
-    
-    return self;
   };
   
   $.jitter.builder.forms = function(target, builder) {
@@ -551,9 +525,7 @@ String.prototype.strip = function() {
     };
     
     $.each($.jitter.feeds, function(index, item) {
-      if(item.simpleTitle) {
-        buildFeedForm(item);
-      }
+      if(item.simpleTitle) { buildFeedForm(item); }
     });
     
     target.append(wrapper);
@@ -590,11 +562,9 @@ String.prototype.strip = function() {
   $.fn.jitter = function(options) {
     var target = this;
     
-    if(!target.find(".tweets").length) {
-      target.append($("<div class='tweets prepend-6 span-18 last'/>"));
-    }
+    if(!target.find(".tweets").length) { target.append($("<div class='tweets prepend-6 span-18 last'/>")); }
     
-    var builder = $.jitter.builder(target, options);
+    $.jitter.builder(target, options);
     
     (function() {
       var currentFilteredClass = function() {
@@ -632,33 +602,27 @@ String.prototype.strip = function() {
       if(!$(document).data("keypressAssigned")) {
         $(document).keydown(function(e) {
           if (/(input|textarea|select)/i.test(e.target.nodeName)) { return; }
-          
+
           var keyPressed = String.fromCharCode(e.which);
           
-          if(keyPressed == "H") {
+          var keyMappings = {
+            "H": hideVisibleTweets,
+            "U": showHiddenTweets,
+            "O": openTweetAuthorTwitterPage,
+            "P": openTweetLinkedURLs,
+            "J": setCurrentToFirstTweet,
+            "37": setCurrentToFirstTweet,
+            "I": setCurrentToPrevTweet,
+            "38": setCurrentToPrevTweet,
+            "L": setCurrentToLastTweet,
+            "39": setCurrentToLastTweet,
+            "K": setCurrentToNextTweet,
+            "40": setCurrentToNextTweet
+          };
+          
+          if(keyMappings[keyPressed] || keyMappings[e.which]) {
             e.preventDefault();
-            hideVisibleTweets();
-          } else if(keyPressed == "U") {
-            e.preventDefault();
-            showHiddenTweets();
-          } else if(keyPressed == "O") {
-            e.preventDefault();
-            openTweetAuthorTwitterPage();
-          } else if(keyPressed == "P") {
-            e.preventDefault();
-            openTweetLinkedURLs();
-          } else if(keyPressed == "J") {
-            e.preventDefault();
-            setCurrentToFirstTweet();
-          } else if(keyPressed == "I") {
-            e.preventDefault();
-            setCurrentToPrevTweet();
-          } else if(keyPressed == "L") {
-            e.preventDefault();
-            setCurrentToLastTweet();
-          } else if(keyPressed == "K") {
-            e.preventDefault();
-            setCurrentToNextTweet();
+            keyMappings[keyPressed] ? keyMappings[keyPressed]() : keyMappings[e.which]();
           }
           
           var number = new Number(keyPressed);

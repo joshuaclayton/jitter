@@ -90,8 +90,6 @@
   };
   
   $.jitter.builder.filter = function(target, builder) {
-    var self = {};
-    
     var readFilterLink = function(anchor) {
       var $anchor = $(anchor);
       $anchor.data("unreadCount", 0);
@@ -108,48 +106,50 @@
       $(document).scrollTo($(".tweet:visible:eq(0)"), 200);
     };
     
-    self.buildFilterLink = function() {
-      $("<a/>")
-        .html(builder.feedTitle())
-        .attr({href: "#", id: builder.cssClass()})
-        .click(function() { triggerFilterLink(this); return false; })
-        .dblclick(function() { 
-          target.find("." + builder.cssClass()).remove();
-          $(this).remove(); 
-          builder.jitter.stop();
-          target.find(".jitter-filters a:first").trigger("click");
-        })
-        .observeData()
-        .bind("unreadCountChanged", function(e, data) {
-          var $this = $(this);
-          if(!$this.find(".unreadCount").length) {
-            $("<span class='unreadCount'/>").
-              html(data.to).
-              appendTo($this);
-          } else {
-            $this.
-              find(".unreadCount").
-              html(data.to);
-          }
-          if(data.to === 0) { $this.find(".unreadCount").remove(); }
-        })
-        .data("unreadCount", 0)
-        .appendTo(target.find(".jitter-filters"));
+    (function() {
+      if(!target.find(".jitter-filters").length) {
+        var filters = $("<div class='jitter-filters span-6'/>").html("<h1>Jitter!</h1>");
+
+        $("<a/>")
+          .html("All Feeds")
+          .attr({href: "#", id: "tweet"})
+          .addClass("active allTweets")
+          .click(function () { triggerFilterLink(this); return false; })
+          .appendTo(filters);
+        target.prepend(filters);
+      }
+    })();
+    
+    return {
+      buildFilterLink: function() {
+        $("<a/>")
+          .html(builder.feedTitle())
+          .attr({href: "#", id: builder.cssClass()})
+          .click(function() { triggerFilterLink(this); return false; })
+          .dblclick(function() { 
+            target.find("." + builder.cssClass()).remove();
+            $(this).remove(); 
+            builder.jitter.stop();
+            target.find(".jitter-filters a:first").trigger("click");
+          })
+          .observeData()
+          .bind("unreadCountChanged", function(e, data) {
+            var $this = $(this);
+            if(!$this.find(".unreadCount").length) {
+              $("<span class='unreadCount'/>").
+                html(data.to).
+                appendTo($this);
+            } else {
+              $this.
+                find(".unreadCount").
+                html(data.to);
+            }
+            if(data.to === 0) { $this.find(".unreadCount").remove(); }
+          })
+          .data("unreadCount", 0)
+          .appendTo(target.find(".jitter-filters"));
+      }
     };
-    
-    if(!target.find(".jitter-filters").length) {
-      var filters = $("<div class='jitter-filters span-6'/>").html("<h1>Jitter!</h1>");
-      
-      $("<a/>")
-        .html("All Feeds")
-        .attr({href: "#", id: "tweet"})
-        .addClass("active allTweets")
-        .click(function () { triggerFilterLink(this); return false; })
-        .appendTo(filters);
-      target.prepend(filters);
-    }
-    
-    return self;
   };
   
   $.jitter.builder.forms = function(target, builder) {
@@ -209,9 +209,7 @@
     };
     
     $.each($.jitter.feeds, function(index, item) {
-      if(item.simpleTitle) {
-        buildFeedForm(item);
-      }
+      if(item.simpleTitle) { buildFeedForm(item); }
     });
     
     target.append(wrapper);

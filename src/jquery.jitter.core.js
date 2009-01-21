@@ -1,20 +1,10 @@
 (function($) {
   $.jitter = function(settings) {
-    var options = $.extend({}, $.jitter.defaults, settings);
-    if(typeof(options.feed) === "string") {
-      options.currentFeed = $.jitter.feeds[options.feed];
-    } else {
-      options.currentFeed = options.feed;
-    }
+    var options = $.extend({}, $.jitter.defaults, settings),
+        updateTweets = function() {},
+        jitter = {tweets: []};
+    options.currentFeed = typeof(options.feed) === "string" ? $.jitter.feeds[options.feed] : options.feed;
     
-    var updateTweets = function() {};
-    
-    // wrapper for all private instance variables
-    var jitter = {tweets: []};
-
-    // public object
-    var self = {};
-
     // private methods
     var buildRequestParams = function() {
       var requestParams = {};
@@ -48,22 +38,6 @@
       }
     };
     
-    var setupTimer = function() {
-      if(!jitter.timer) {
-        jitter.timer = $.timer(calculateRefreshRate(), function(t) {
-          updateTweets();
-        });
-
-        self.stop = function() {
-          jitter.timer.stop();
-        };
-
-        self.restart = function() {
-          jitter.timer.reset(calculateRefreshRate());
-        };
-      }
-    };
-    
     // public instance methods
     var feedClass = function() {
       var feedClassName = options.currentFeed.name;
@@ -91,7 +65,7 @@
           var originalSinceID = jitter.sinceID,                                                       // freeze sinceID to see if sinceID was set from a previous request
               updatingExistingTweets = !!jitter.sinceID;
 
-          if(options.currentFeed.trackSince === true && data[0]) { jitter.sinceID = data[0].id; }     // set sinceID to the 'newest' tweet in the results
+          if(!!options.currentFeed.trackSince && data[0]) { jitter.sinceID = data[0].id; }            // set sinceID to the 'newest' tweet in the results
           if(options.onUpdate && typeof(options.onUpdate) == "function") { options.onUpdate(data); }  // trigger the onUpdate callback
 
           if(updatingExistingTweets) { data = data.reverse(); }                                       // reverse dataset for unshift
@@ -102,16 +76,7 @@
         }
       });
     };
-    
-    // point to internals
-    self.tweets       = function() { return jitter.tweets; };
-    self.updateTweets = function() { return updateTweets(); };
-    self.options      = function() { return options; };
-    
-    // make feed info public
-    self.feedClass = feedClass;
-    self.feedTitle = feedTitle;
-    
+
     try {
       if(options.currentFeed == $.jitter.feeds.search && !options.query) { throw($.jitter.errors.invalidSearchRequest); }
       if(options.currentFeed == $.jitter.feeds.groupTimeline && (!options.users || (options.users && !options.users.length) || !options.groupName)) { throw($.jitter.errors.invalidGroupTimelineRequest); }
@@ -120,12 +85,21 @@
       handleError(error);
       return;
     }
-    
-    self.start = function() {
-      updateTweets();
-      setupTimer();
+
+    return {
+      feedClass: feedClass,
+      feedTitle: feedTitle,
+      tweets: function() { return jitter.tweets; },
+      updateTweets: function() { return updateTweets(); },
+      options: function() { return options; },
+      start: function() {
+        updateTweets();
+        if(!jitter.timer) {
+          jitter.timer = $.timer(calculateRefreshRate(), function(t) { updateTweets(); });
+          this.stop = function() { jitter.timer.stop(); };
+          this.restart = function() { jitter.timer.reset(calculateRefreshRate()); };
+        }
+      }
     };
-    
-    return self;
   };
 })(jQuery);
