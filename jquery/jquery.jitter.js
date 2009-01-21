@@ -575,10 +575,7 @@ String.prototype.strip = function() {
         return "";
       };
       
-      var triggerTweet = function(t) {
-        t.trigger("click");
-      };
-
+      var triggerTweet = function(t) { t.trigger("click"); };
       var hideVisibleTweets = function() { $(".tweet.read" + currentFilteredClass()).addClass("no-show"); $(".tweet.no-show:visible").hide(); };
       var showHiddenTweets = function() { $(".tweet.no-show" + currentFilteredClass()).show().removeClass("no-show"); };
       var openTweetAuthorTwitterPage = function() { window.open($(".tweet.current .author .displayName a").attr("href"), "_blank"); };
@@ -588,18 +585,18 @@ String.prototype.strip = function() {
         });
       };
       var setCurrentToFirstTweet = function() { triggerTweet($(".tweet:visible:first")); };
-      var setCurrentToNextTweet = function() { triggerTweet($(".tweet.current").next(":visible")); };
-      var setCurrentToPrevTweet = function() { triggerTweet($(".tweet.current").prev(":visible")); };
+      var setCurrentToNextTweet = function() { triggerTweet($(".tweet.current").nextAll(":visible:first")); };
+      var setCurrentToPrevTweet = function() { triggerTweet($(".tweet.current").prevAll(":visible:first")); };
       var setCurrentToLastTweet = function() { triggerTweet($(".tweet:visible:last")); };
       
-      $(".tweet").live("click", function(e) {
-        $(this)
-          .siblings().removeClass("current").end()
-          .addClass("read").addClass("current");
-        $(document).scrollTo($(".tweet.current"), 200);
-      });
-      
-      if(!$(document).data("keypressAssigned")) {
+      if(!$(document).data("keypressesBound")) {
+        $(".tweet").live("click", function(e) {
+          $(this)
+            .siblings(".current").removeClass("current").end()
+            .addClass("read current");
+          $(document).scrollTo($(".tweet.current"), 175);
+        });
+        
         $(document).keydown(function(e) {
           if (/(input|textarea|select)/i.test(e.target.nodeName)) { return; }
 
@@ -631,7 +628,7 @@ String.prototype.strip = function() {
             if(anch) { e.preventDefault(); anch.trigger("click"); }
           }
         });
-        $(document).data("keypressAssigned", true);
+        $(document).data("keypressesBound", true);
       }
     })();
     return target;
