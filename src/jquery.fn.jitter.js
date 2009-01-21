@@ -16,25 +16,25 @@
       };
       
       var triggerTweet = function(t) { t.trigger("click"); };
-      var hideVisibleTweets = function() { $(".tweet.read" + currentFilteredClass()).addClass("no-show"); $(".tweet.no-show:visible").hide(); };
-      var showHiddenTweets = function() { $(".tweet.no-show" + currentFilteredClass()).show().removeClass("no-show"); };
-      var openTweetAuthorTwitterPage = function() { window.open($(".tweet.current .author .displayName a").attr("href"), "_blank"); };
+      var hideVisibleTweets = function() { $("div.tweet.read" + currentFilteredClass()).addClass("no-show"); $("div.tweet.no-show:visible").hide(); };
+      var showHiddenTweets = function() { $("div.tweet.no-show" + currentFilteredClass()).show().removeClass("no-show"); };
+      var openTweetAuthorTwitterPage = function() { window.open($("div.tweet.current div.author div.displayName a").attr("href"), "_blank"); };
       var openTweetLinkedURLs = function() { 
-        $(".tweet.current .tweetBody a").each(function(idx, anchor) {
+        $("div.tweet.current div.tweetBody a").each(function(idx, anchor) {
           window.open($(anchor).attr("href"), "_blank");
         });
       };
-      var setCurrentToFirstTweet = function() { triggerTweet($(".tweet:visible:first")); };
-      var setCurrentToNextTweet = function() { triggerTweet($(".tweet.current").nextAll(":visible:first")); };
-      var setCurrentToPrevTweet = function() { triggerTweet($(".tweet.current").prevAll(":visible:first")); };
-      var setCurrentToLastTweet = function() { triggerTweet($(".tweet:visible:last")); };
+      var setCurrentToFirstTweet = function() { triggerTweet($("div.tweet:visible:first")); };
+      var setCurrentToNextTweet = function() { triggerTweet($("div.tweet.current").nextAll(":visible:first")); };
+      var setCurrentToPrevTweet = function() { triggerTweet($("div.tweet.current").prevAll(":visible:first")); };
+      var setCurrentToLastTweet = function() { triggerTweet($("div.tweet:visible:last")); };
       
       if(!$(document).data("keypressesBound")) {
-        $(".tweet").live("click", function(e) {
+        $("div.tweet").live("click", function(e) {
           $(this)
             .siblings(".current").removeClass("current").end()
             .addClass("read current");
-          $(document).scrollTo($(".tweet.current"), 175);
+          $(document).scrollTo($("div.tweet.current"), 175);
         });
         
         $(document).keydown(function(e) {
