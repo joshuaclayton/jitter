@@ -73,6 +73,9 @@ String.prototype.strip = function() {
     timestamp: function(tweet) {
       return new Date(tweet.created_at).toUTCString();
     },
+    prettyTimestamp: function(tweet) {
+      return $.prettyDate(tweet.created_at);
+    },
     username: function(tweet) {
       return tweet.user ? tweet.user.screen_name : tweet.from_user;
     },
@@ -129,6 +132,26 @@ String.prototype.strip = function() {
     return $(this).each(function() {
       $(this).bind("setData", binder);
     });
+  };
+})(jQuery);
+
+(function($) {
+  $.prettyDate = function(time) {
+    var date = new Date(time || ""),
+        diff = (((new Date()).getTime() - date.getTime()) / 1000),
+        day_diff = Math.floor(diff / 86400);
+    if ( isNaN(day_diff) || day_diff < 0 || day_diff >= 31 )
+      return time;
+
+    return day_diff == 0 && (
+        diff < 60 && "just now" ||
+        diff < 120 && "1 minute ago" ||
+        diff < 3600 && Math.floor( diff / 60 ) + " minutes ago" ||
+        diff < 7200 && "1 hour ago" ||
+        diff < 86400 && Math.floor( diff / 3600 ) + " hours ago") ||
+      day_diff == 1 && "Yesterday" ||
+      day_diff < 7 && day_diff + " days ago" ||
+      day_diff < 31 && Math.ceil( day_diff / 7 ) + " weeks ago";
   };
 })(jQuery);(function($) {
   $.jitter = function(settings) {
@@ -339,6 +362,10 @@ String.prototype.strip = function() {
       
       currentlyFilteredToAll = target.find(".jitter-filters a.active").length ? (target.find(".jitter-filters a.active").attr("class").match("allTweets") ? true : false) : false;
       
+      $("div.timestamp").each(function(idx, item) {
+        $(item).html($.prettyDate($(item).title));
+      });
+      
       if(tweets.length) {
         var wrapper = $("<div/>");
         $.each(tweets, function(index, tweet) {
@@ -349,7 +376,7 @@ String.prototype.strip = function() {
                   <div class="tweetImage span-2"/>\
                   <div class="displayName span-3 last"/>\
                 </div>\
-                <div class="createdAt"/>\
+                <div class="createdAt timestamp"/>\
                 <div class="backtrack"/>\
               </div>\
               <div class="tweetBody span-11 append-1 last"/>\
@@ -359,7 +386,10 @@ String.prototype.strip = function() {
             .find(".tweetBody").html($.twitter.linkedText(tweet)).end()
             .find(".author .displayName").html($.twitter.userURL(tweet)).end()
             .find(".author .tweetImage").append($.twitter.image(tweet)).end()
-            .find(".createdAt").html($.twitter.timestamp(tweet)).end()
+            .find(".createdAt")
+              .html($.twitter.prettyTimestamp(tweet))
+              .attr("title", $.twitter.timestamp(tweet))
+              .end()
             .appendTo(wrapper);
         });
         
@@ -567,11 +597,11 @@ String.prototype.strip = function() {
     $.jitter.builder(target, options);
     
     (function() {
+      if($(document).data("keypressesBound")) { return; }
+      
       var currentFilteredClass = function() {
         var potentialFilterClass = target.find(".jitter-filters a.active").attr("id");
-        if(potentialFilterClass) {
-          return "." + potentialFilterClass;
-        }
+        if(potentialFilterClass) { return "." + potentialFilterClass; }
         return "";
       };
       
@@ -589,48 +619,47 @@ String.prototype.strip = function() {
       var setCurrentToPrevTweet = function() { triggerTweet($("div.tweet.current").prevAll(":visible:first")); };
       var setCurrentToLastTweet = function() { triggerTweet($("div.tweet:visible:last")); };
       
-      if(!$(document).data("keypressesBound")) {
-        $("div.tweet").live("click", function(e) {
-          $(this)
-            .siblings(".current").removeClass("current").end()
-            .addClass("read current");
-          $(document).scrollTo($("div.tweet.current"), 175);
-        });
-        
-        $(document).keydown(function(e) {
-          if (/(input|textarea|select)/i.test(e.target.nodeName)) { return; }
+      $("div.tweet").live("click", function(e) {
+        $(this)
+          .siblings(".current").removeClass("current").end()
+          .addClass("read current");
+        $(document).scrollTo($("div.tweet.current"), 175);
+      });
+      
+      $(document).keydown(function(e) {
+        if (/(input|textarea|select)/i.test(e.target.nodeName)) { return; }
 
-          var keyPressed = String.fromCharCode(e.which);
-          
-          var keyMappings = {
-            "H": hideVisibleTweets,
-            "U": showHiddenTweets,
-            "O": openTweetAuthorTwitterPage,
-            "P": openTweetLinkedURLs,
-            "J": setCurrentToFirstTweet,
-            "37": setCurrentToFirstTweet,
-            "I": setCurrentToPrevTweet,
-            "38": setCurrentToPrevTweet,
-            "L": setCurrentToLastTweet,
-            "39": setCurrentToLastTweet,
-            "K": setCurrentToNextTweet,
-            "40": setCurrentToNextTweet
-          };
-          
-          if(keyMappings[keyPressed] || keyMappings[e.which]) {
-            e.preventDefault();
-            keyMappings[keyPressed] ? keyMappings[keyPressed]() : keyMappings[e.which]();
-          }
-          
-          var number = new Number(keyPressed);
-          if(number && number >= 0) {
-            var anch = $(".jitter-filters a:eq(" + number + ")");
-            if(anch) { e.preventDefault(); anch.trigger("click"); }
-          }
-        });
-        $(document).data("keypressesBound", true);
-      }
+        var keyPressed = String.fromCharCode(e.which);
+        
+        var keyMappings = {
+          "H": hideVisibleTweets,
+          "U": showHiddenTweets,
+          "O": openTweetAuthorTwitterPage,
+          "P": openTweetLinkedURLs,
+          "J": setCurrentToFirstTweet,
+          "37": setCurrentToFirstTweet,
+          "I": setCurrentToPrevTweet,
+          "38": setCurrentToPrevTweet,
+          "L": setCurrentToLastTweet,
+          "39": setCurrentToLastTweet,
+          "K": setCurrentToNextTweet,
+          "40": setCurrentToNextTweet
+        };
+        
+        if(keyMappings[keyPressed] || keyMappings[e.which]) {
+          e.preventDefault();
+          keyMappings[keyPressed] ? keyMappings[keyPressed]() : keyMappings[e.which]();
+        }
+        
+        var number = new Number(keyPressed);
+        if(number && number >= 0) {
+          var anch = $(".jitter-filters a:eq(" + number + ")");
+          if(anch) { e.preventDefault(); anch.trigger("click"); }
+        }
+      });
+      $(document).data("keypressesBound", true);
     })();
+    
     return target;
   };
 })(jQuery);

@@ -7,11 +7,11 @@
     $.jitter.builder(target, options);
     
     (function() {
+      if($(document).data("keypressesBound")) { return; }
+      
       var currentFilteredClass = function() {
         var potentialFilterClass = target.find(".jitter-filters a.active").attr("id");
-        if(potentialFilterClass) {
-          return "." + potentialFilterClass;
-        }
+        if(potentialFilterClass) { return "." + potentialFilterClass; }
         return "";
       };
       
@@ -29,48 +29,47 @@
       var setCurrentToPrevTweet = function() { triggerTweet($("div.tweet.current").prevAll(":visible:first")); };
       var setCurrentToLastTweet = function() { triggerTweet($("div.tweet:visible:last")); };
       
-      if(!$(document).data("keypressesBound")) {
-        $("div.tweet").live("click", function(e) {
-          $(this)
-            .siblings(".current").removeClass("current").end()
-            .addClass("read current");
-          $(document).scrollTo($("div.tweet.current"), 175);
-        });
-        
-        $(document).keydown(function(e) {
-          if (/(input|textarea|select)/i.test(e.target.nodeName)) { return; }
+      $("div.tweet").live("click", function(e) {
+        $(this)
+          .siblings(".current").removeClass("current").end()
+          .addClass("read current");
+        $(document).scrollTo($("div.tweet.current"), 175);
+      });
+      
+      $(document).keydown(function(e) {
+        if (/(input|textarea|select)/i.test(e.target.nodeName)) { return; }
 
-          var keyPressed = String.fromCharCode(e.which);
-          
-          var keyMappings = {
-            "H": hideVisibleTweets,
-            "U": showHiddenTweets,
-            "O": openTweetAuthorTwitterPage,
-            "P": openTweetLinkedURLs,
-            "J": setCurrentToFirstTweet,
-            "37": setCurrentToFirstTweet,
-            "I": setCurrentToPrevTweet,
-            "38": setCurrentToPrevTweet,
-            "L": setCurrentToLastTweet,
-            "39": setCurrentToLastTweet,
-            "K": setCurrentToNextTweet,
-            "40": setCurrentToNextTweet
-          };
-          
-          if(keyMappings[keyPressed] || keyMappings[e.which]) {
-            e.preventDefault();
-            keyMappings[keyPressed] ? keyMappings[keyPressed]() : keyMappings[e.which]();
-          }
-          
-          var number = new Number(keyPressed);
-          if(number && number >= 0) {
-            var anch = $(".jitter-filters a:eq(" + number + ")");
-            if(anch) { e.preventDefault(); anch.trigger("click"); }
-          }
-        });
-        $(document).data("keypressesBound", true);
-      }
+        var keyPressed = String.fromCharCode(e.which);
+        
+        var keyMappings = {
+          "H": hideVisibleTweets,
+          "U": showHiddenTweets,
+          "O": openTweetAuthorTwitterPage,
+          "P": openTweetLinkedURLs,
+          "J": setCurrentToFirstTweet,
+          "37": setCurrentToFirstTweet,
+          "I": setCurrentToPrevTweet,
+          "38": setCurrentToPrevTweet,
+          "L": setCurrentToLastTweet,
+          "39": setCurrentToLastTweet,
+          "K": setCurrentToNextTweet,
+          "40": setCurrentToNextTweet
+        };
+        
+        if(keyMappings[keyPressed] || keyMappings[e.which]) {
+          e.preventDefault();
+          keyMappings[keyPressed] ? keyMappings[keyPressed]() : keyMappings[e.which]();
+        }
+        
+        var number = new Number(keyPressed);
+        if(number && number >= 0) {
+          var anch = $(".jitter-filters a:eq(" + number + ")");
+          if(anch) { e.preventDefault(); anch.trigger("click"); }
+        }
+      });
+      $(document).data("keypressesBound", true);
     })();
+    
     return target;
   };
 })(jQuery);

@@ -23,6 +23,10 @@
       
       currentlyFilteredToAll = target.find(".jitter-filters a.active").length ? (target.find(".jitter-filters a.active").attr("class").match("allTweets") ? true : false) : false;
       
+      $("div.timestamp").each(function(idx, item) {
+        $(item).html($.prettyDate($(item).title));
+      });
+      
       if(tweets.length) {
         var wrapper = $("<div/>");
         $.each(tweets, function(index, tweet) {
@@ -33,7 +37,7 @@
                   <div class="tweetImage span-2"/>\
                   <div class="displayName span-3 last"/>\
                 </div>\
-                <div class="createdAt"/>\
+                <div class="createdAt timestamp"/>\
                 <div class="backtrack"/>\
               </div>\
               <div class="tweetBody span-11 append-1 last"/>\
@@ -43,7 +47,10 @@
             .find(".tweetBody").html($.twitter.linkedText(tweet)).end()
             .find(".author .displayName").html($.twitter.userURL(tweet)).end()
             .find(".author .tweetImage").append($.twitter.image(tweet)).end()
-            .find(".createdAt").html($.twitter.timestamp(tweet)).end()
+            .find(".createdAt")
+              .html($.twitter.prettyTimestamp(tweet))
+              .attr("title", $.twitter.timestamp(tweet))
+              .end()
             .appendTo(wrapper);
         });
         

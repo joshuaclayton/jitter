@@ -73,6 +73,9 @@ String.prototype.strip = function() {
     timestamp: function(tweet) {
       return new Date(tweet.created_at).toUTCString();
     },
+    prettyTimestamp: function(tweet) {
+      return $.prettyDate(tweet.created_at);
+    },
     username: function(tweet) {
       return tweet.user ? tweet.user.screen_name : tweet.from_user;
     },
@@ -129,5 +132,25 @@ String.prototype.strip = function() {
     return $(this).each(function() {
       $(this).bind("setData", binder);
     });
+  };
+})(jQuery);
+
+(function($) {
+  $.prettyDate = function(time) {
+    var date = new Date(time || ""),
+        diff = (((new Date()).getTime() - date.getTime()) / 1000),
+        day_diff = Math.floor(diff / 86400);
+    if ( isNaN(day_diff) || day_diff < 0 || day_diff >= 31 )
+      return time;
+
+    return day_diff == 0 && (
+        diff < 60 && "just now" ||
+        diff < 120 && "1 minute ago" ||
+        diff < 3600 && Math.floor( diff / 60 ) + " minutes ago" ||
+        diff < 7200 && "1 hour ago" ||
+        diff < 86400 && Math.floor( diff / 3600 ) + " hours ago") ||
+      day_diff == 1 && "Yesterday" ||
+      day_diff < 7 && day_diff + " days ago" ||
+      day_diff < 31 && Math.ceil( day_diff / 7 ) + " weeks ago";
   };
 })(jQuery);
