@@ -115,7 +115,7 @@
     
     (function() {
       if(!target.find(".jitter-filters").length) {
-        var filters = $("<div class='jitter-filters span-6'/>").html("<h1>Jitter!</h1>");
+        var filters = $("<div class='jitter-filters span-6'/>").html("<h1>Jitter</h1>");
 
         $("<a/>")
           .html("All Feeds")
@@ -164,8 +164,8 @@
     
     var wrapper = $("<div class='forms'/>");
     
-    var buildFeedForm = function(feed) {
-      var form = $("<form/>")
+    var buildFeedForm = function(feed, idx) {
+      var form = $("<form class='prepend-1 append-1 span-10'></form>")
         .attr({action: "#"})
         .submit(function() {
           var $this = $(this);
@@ -176,7 +176,6 @@
               query     = $this.find("input[name=query]").val();
           
           if(users) { users = users.split(/ *, */); }
-          
           var options = {};
           
           if(feed.requiresUsername) { options.username = username; }
@@ -188,35 +187,42 @@
           target.jitter(options);
           $this.find("input:not([type=submit])").val("");
           return false;
-        });
-      
+        }),
+        fieldset = $("<fieldset/>").append($("<legend/>").html("<span>" + feed.simpleTitle + "</span>"));
+
       if(feed.requiresUsername) {
-        $("<label for='username'>Username</label><input type='text' name='username' class='text span-4' value='Enter a Username' />").defaultValueActsAsHint().appendTo(form);
+        $("<label for='username'>Username</label><input type='text' name='username' class='title span-8' value='Enter a Username' />").defaultValueActsAsHint().appendTo(fieldset);
       }
       
       if(feed.requiresPassword) {
-        $("<label for='password'>Password</label><input type='password' name='password' class='text span-4' value='Password'/>").defaultValueActsAsHint().appendTo(form);
+        $("<label for='password'>Password</label><input type='password' name='password' class='title span-8' value='Password'/>").defaultValueActsAsHint().appendTo(fieldset);
       }
       
       if(feed.performSearch) {
-        $("<label for='query'>Search</label><input type='text' name='query' class='text span-4' value='Enter a Search Term' />").defaultValueActsAsHint().appendTo(form);
+        $("<label for='query'>Search</label><input type='text' name='query' class='title span-8' value='Enter a Search Term' />").defaultValueActsAsHint().appendTo(fieldset);
       }
       
       if(feed.filteredUsers) {
-        $("<label for='groupName'>Group Name</label><input type='text' name='groupName' class='text span-4' value='Name of Your Group' />").defaultValueActsAsHint().appendTo(form);
-        $("<label for='users'>Users</label><input type='text' name='users' class='text span-4' value='Comma-delimited List of Users' />").defaultValueActsAsHint().appendTo(form);
+        $("<label for='groupName'>Group Name</label><input type='text' name='groupName' class='title span-8' value='Name of Your Group' />").defaultValueActsAsHint().appendTo(fieldset);
+        $("<label for='users'>Users</label><input type='text' name='users' class='title span-8' value='Comma-delimited List of Users' />").defaultValueActsAsHint().appendTo(fieldset);
       }
       
-      $("<input type='submit' value='Add Feed' />").appendTo(form);
+      $("<input type='submit' value='Add Feed' />").appendTo(fieldset);
       
-      $("<div class='jitterForm'/>")
-        .append($("<h3/>").html(feed.simpleTitle))
-        .append(form)
+      var evn = !!(idx % 2 == 0);
+      $("<div class='jitterForm span-12'/>")
+        .addClass(evn ? "last" : "")
+        .append(form.append(fieldset))
         .appendTo(wrapper);
+      if(evn) {
+        wrapper.append("<hr class='space' />");
+      }
     };
     
-    $.each($.jitter.feeds, function(index, item) {
-      if(item.simpleTitle) { buildFeedForm(item); }
+    var index = 0;
+    
+    $.each($.jitter.feeds, function(feedName, item) {
+      if(item.simpleTitle) { index++; buildFeedForm(item, index); }
     });
     
     target.append(wrapper);

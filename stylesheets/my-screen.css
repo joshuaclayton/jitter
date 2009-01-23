@@ -1,14 +1,14 @@
 .container noscript h1 {text-align: center; font-weight: bold; text-transform: uppercase; color: #a33; padding: 1em 0 .5em; font-size: 3.25em;}
 .container noscript p { font-size: 2em; color: #666; font-weight: bold; text-align: justify; letter-spacing: .035em;}
-.container noscript a {color: #333;}
+body {color: #666;}
+a {color: #333;}
 
-input.hint, textarea.hint {color: #888; text-transform: uppercase;}
-
-.jitter-filters { background: #ccc; position: fixed; top: 0;}
-.jitter-filters h1 { text-align: center; border-bottom: 1px solid #aaa; margin-bottom: 0; padding: .25em 0; font-variant: small-caps; letter-spacing: .05em;}
-.jitter-filters a {display: block; padding: .5em .75em; text-decoration: none; position: relative; border-bottom: 1px solid #aaa; border-top: 1px solid #ddd;}
-.jitter-filters a:hover {background: #c0c0c0; border-bottom: 1px solid #a0a0a0; border-top: 1px solid #d5d5d5;}
-.jitter-filters a.active {font-weight: bold;}
+.jitter-filters { position: fixed; top: 0;}
+.jitter-filters h1 { text-align: center; font-weight: bold; text-transform: uppercase; color: #a33; padding: .5em 0; font-size: 3.25em; border-bottom: 1px solid #dfdfdf; margin-bottom: 0;}
+.jitter-filters a {display: block; padding: .5em .75em; text-decoration: none; position: relative; border-bottom: 1px solid #dfdfdf; color: #777; text-transform: uppercase;}
+.jitter-filters a:hover {background: #fafafa;}
+.jitter-filters a.active {font-weight: bold; color: #555;}
+.jitter-filters a.active:hover { background: transparent; cursor: default;}
 .jitter-filters a .unreadCount {
   position: absolute;
   text-align: center; 
@@ -22,12 +22,27 @@ input.hint, textarea.hint {color: #888; text-transform: uppercase;}
   -moz-border-radius: .5em;
   -webkit-border-radius: .5em;
 }
-.tweet {border-bottom: 1px solid #ddd; border-top: 1px solid #f5f5f5; padding: 1em 0; background: #eee;}
-.tweet.read {color: #999;}
-.tweet.current {background: #fcfcfc;}
+.tweet {border-bottom: 1px solid #dfdfdf; padding: 1em 0;}
+.tweet.read {opacity: 0.4;}
+.tweet.current {background: #ffe; color: #666; opacity: 1;}
 .tweet .createdAt {font-size: .9em;}
 .tweet .author .displayName {font-weight: bold; font-size: 1.2em;}
 .tweet .tweetBody {font-size: 1.5em; font-weight: 500;}
 
-.jitterForm label {display: block;}
-.jitterForm {border-bottom: 1px solid #ccc; padding: 1em 0;}
+.jitterForm label {display: block; font-size: 1.5em; color: #777; font-weight: normal; letter-spacing: 0.075em;}
+.jitterForm label + input + label {padding-top: 1em;}
+.jitterForm {padding: 1em 0;}
+
+.jitterForm fieldset {padding:4em 0 1em 0;margin:0; border: none; border-top: 1px solid #ccc; position: relative;}
+.jitterForm legend span {
+  text-transform: uppercase; color: #a33; font-weight: normal; font-size: 1.75em;
+  display: block; 
+  position: absolute; 
+}
+.jitterForm fieldset input[type=submit] { position: absolute; top: -3.5em; right: .5em; }
+input.hint, textarea.hint {color: #bbb; text-transform: lowercase;}
+
+.cheatsheet {font-size: 1.75em;}
+.cheatsheet dt {float: left; width: .5em; clear: both;}
+.cheatsheet dd {float: left;}
+.cheatsheet dt, .cheatsheet dd {padding: 0 0 .5em 0;}
