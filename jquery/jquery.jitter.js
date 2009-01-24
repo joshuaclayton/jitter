@@ -49,7 +49,7 @@ String.prototype.strip = function() {
       return $.twitter.urls.status.interpolate({username: $.twitter.username(tweet), id: tweet.id});
     },
     image: function(tweet) {
-      return $("<img/>").attr("src", (tweet.user ? tweet.user.profile_image_url : tweet.profile_image_url));
+      return $("<img width='48' height='48' />").attr({src: (tweet.user ? tweet.user.profile_image_url : tweet.profile_image_url)});
     },
     linkedText: function(tweet) {
       var text = tweet.text,
@@ -344,8 +344,9 @@ String.prototype.strip = function() {
     options = options || {};
     
     var showTweets = function(tweetsParent, tweetClass, numberOfTweetsToDisplay) {
-      tweetsParent.find(".tweet:visible").hide();
-      tweetsParent.find(tweetClass + ":lt(" + numberOfTweetsToDisplay + "):not(.no-show)").show();
+      tweetsParent
+        .find(".tweet").hide().end()
+        .find(tweetClass + ":lt(" + numberOfTweetsToDisplay + "):not(.no-show)").show();
     };
     
     var showTweetCount = function(anchor) {
@@ -525,6 +526,7 @@ String.prototype.strip = function() {
           options.feed = feed;
           target.jitter(options);
           $this.find("input:not([type=submit])").val("");
+          $this.find("input").blur();
           return false;
         }),
         fieldset = $("<fieldset/>").append($("<legend/>").html("<span>" + feed.simpleTitle + "</span>"));

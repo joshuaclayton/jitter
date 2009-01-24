@@ -23,23 +23,26 @@ a {color: #333;}
   -webkit-border-radius: .5em;
 }
 .tweet {border-bottom: 1px solid #dfdfdf; padding: 1em 0;}
-.tweet.read {opacity: 0.4;}
+.tweet.read {opacity: 0.375;}
 .tweet.current {background: #ffe; color: #666; opacity: 1;}
 .tweet .createdAt {font-size: .9em;}
 .tweet .author .displayName {font-weight: bold; font-size: 1.2em;}
 .tweet .tweetBody {font-size: 1.5em; font-weight: 500;}
 
+.forms { padding-top: 1em; clear: both;}
+.jitterForm {background: #f5f5f5;}
 .jitterForm label {display: block; font-size: 1.5em; color: #777; font-weight: normal; letter-spacing: 0.075em;}
 .jitterForm label + input + label {padding-top: 1em;}
 .jitterForm {padding: 1em 0;}
 
-.jitterForm fieldset {padding:4em 0 1em 0;margin:0; border: none; border-top: 1px solid #ccc; position: relative;}
+.jitterForm fieldset {margin:0; padding: 1em 0 1em 0; border: 0; position: relative;}
+.jitterForm legend {border-bottom: 1px solid #ccc; display: block; height: 2.5em; width: 100%;}
 .jitterForm legend span {
   text-transform: uppercase; color: #a33; font-weight: normal; font-size: 1.75em;
-  display: block; 
+  display: block;
   position: absolute; 
 }
-.jitterForm fieldset input[type=submit] { position: absolute; top: -3.5em; right: .5em; }
+.jitterForm fieldset input[type=submit] { position: absolute; top: .75em; right: 0;}
 input.hint, textarea.hint {color: #bbb; text-transform: lowercase;}
 
 .cheatsheet {font-size: 1.75em;}

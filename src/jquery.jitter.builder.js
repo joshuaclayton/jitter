@@ -5,8 +5,9 @@
     options = options || {};
     
     var showTweets = function(tweetsParent, tweetClass, numberOfTweetsToDisplay) {
-      tweetsParent.find(".tweet:visible").hide();
-      tweetsParent.find(tweetClass + ":lt(" + numberOfTweetsToDisplay + "):not(.no-show)").show();
+      tweetsParent
+        .find(".tweet").hide().end()
+        .find(tweetClass + ":lt(" + numberOfTweetsToDisplay + "):not(.no-show)").show();
     };
     
     var showTweetCount = function(anchor) {
@@ -186,6 +187,7 @@
           options.feed = feed;
           target.jitter(options);
           $this.find("input:not([type=submit])").val("");
+          $this.find("input").blur();
           return false;
         }),
         fieldset = $("<fieldset/>").append($("<legend/>").html("<span>" + feed.simpleTitle + "</span>"));
