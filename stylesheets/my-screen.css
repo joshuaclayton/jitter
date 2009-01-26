@@ -40,7 +40,7 @@ a {color: #333;}
 .jitterForm legend span {
   text-transform: uppercase; color: #a33; font-weight: normal; font-size: 1.75em;
   display: block;
-  position: absolute; 
+  position: absolute;
 }
 .jitterForm fieldset input[type=submit] { position: absolute; top: .75em; right: 0;}
 input.hint, textarea.hint {color: #bbb; text-transform: lowercase;}
