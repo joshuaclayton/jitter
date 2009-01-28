@@ -364,7 +364,7 @@ String.prototype.strip = function() {
       currentlyFilteredToAll = target.find(".jitter-filters a.active").length ? (target.find(".jitter-filters a.active").attr("class").match("allTweets") ? true : false) : false;
       
       $("div.timestamp").each(function(idx, item) {
-        $(item).html($.prettyDate($(item).title));
+        $(item).html($.prettyDate($(item).attr("title")));
       });
       
       if(tweets.length) {
