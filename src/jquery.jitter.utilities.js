@@ -154,3 +154,13 @@ String.prototype.strip = function() {
       day_diff < 31 && Math.ceil( day_diff / 7 ) + " weeks ago";
   };
 })(jQuery);
+
+(function($) {
+  $.log = function(text) {
+    if(window.console) {
+      window.console.log(text);
+    } else {
+      alert(text);
+    }
+  };
+})(jQuery);
