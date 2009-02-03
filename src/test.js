@@ -1,34 +1,33 @@
 // tweet read handler
 $(document).bind("jitter-tweet-read", function(event, info) {
-  var tweetElements = info.tweets;
+  var $tweetElements = info.tweets;
+  $tweetElements.siblings(".current").removeClass("current").end().addClass("read");
   
-  tweetElements
-    .siblings(".current").removeClass("current").end()
-    .addClass("read");
-    
-  if(info.markAsCurrent) { tweetElements.addClass("current"); }
-  if(info.scrollToCurrent) { $(document).scrollTo($("div.tweet.current"), 175); }
+  if(info.markAsCurrent) { $tweetElements.addClass("current"); }
+  if(info.scrollToCurrent) { $(document).scrollTo($("div.tweet.current"), 200); }
 });
 
 // tweet read/unread count
 $(document).bind("jitter-tweet-read", function(event, info) {
-  if(!$(document).data("jitter-trackUnreadCounts") || info.previouslyRead) { return; }
+  if(!$(document).data("jitter-trackUnreadCounts")) { return; }
   
-  var tweets = info.tweets;
-  
+  var $tweets = info.tweets;
   var handleTweet = function(tweet) {
+    if($(tweet).data("tweet-read") === true) { return; }
+    
+    $.log("handle tweet");
     var $tweet = $(tweet);
     var unreadCountHandle = "jitter-unread-" + $tweet.data("jitter").feed.className,
         unreadCount = $(document).data(unreadCountHandle);
-        
+    $(tweet).data("tweet-read", true);
     $(document).data("jitter-unread", $(document).data("jitter-unread") - 1);
     $(document).data(unreadCountHandle, unreadCount - 1);
   };
   
-  if(tweets.length == 1) {
-    handleTweet(tweets);
+  if($tweets.length == 1) {
+    handleTweet($tweets);
   } else {
-    $.each(tweets, function(index, tweet) { handleTweet(tweet); });
+    $.each($tweets, function(index, tweet) { handleTweet(tweet); });
   }
 });
 
@@ -68,7 +67,7 @@ $(document).bind("jitter.filter.change", function(event, info) {
 
 $(document).bind("setData", function(e, key, val) {
   if(/jitter-unread/.test(key)) {
-    
+    $.log("setting data");
     var $title = $("head title"),
         strippedTitle = $title.html().replace(/\s+\(.+\)/, '');
     $title.html(strippedTitle + " (" + val + ")");
@@ -86,7 +85,11 @@ $(document).bind("setData", function(e, key, val) {
     }
     
     if(window.fluid) {
-      window.fluid.dockBadge = $(document).data("jitter-unread");
+      if($(document).data("jitter-unread") > 0) {
+        window.fluid.dockBadge = $(document).data("jitter-unread");
+      } else {
+        window.fluid.dockBadge = null;
+      }
     }
   }
 });
@@ -97,5 +100,5 @@ $(document).ready(function() {
   var j1 = $.jitter();
   $(document).data("jitter-filter-current", j1.feed);
   j1.start();
-  $.jitter.keyboard();
+  $.jitter.keyboard.enable();
 });

@@ -1,58 +1,45 @@
 (function($) {
-  $.jitter.keyboard = function() {
-    if($(document).data("keypressesBound")) { return; }
-    
-    var currentFilteredClass = function() {
-      var potentialFilterClass = target.find(".jitter-filters a.active").attr("id");
-      if(potentialFilterClass) { return "." + potentialFilterClass; }
-      return "";
-    };
-    
-    var triggerTweet = function(t) { t.trigger("click"); };
-    var hideVisibleTweets = function() { $("div.tweet.read" + currentFilteredClass()).addClass("no-show"); $("div.tweet.no-show:visible").hide(); };
-    var showHiddenTweets = function() { $("div.tweet.no-show" + currentFilteredClass()).show().removeClass("no-show"); };
-    var openTweetAuthorTwitterPage = function() { window.open($("div.tweet.current div.author div.displayName a").attr("href"), "_blank"); };
-    var openTweetLinkedURLs = function() { 
-      $("div.tweet.current div.tweetBody a").each(function(idx, anchor) {
-        window.open($(anchor).attr("href"), "_blank");
+  $.jitter.keyboard = {
+    enable: function() {
+      $(document).data("keyboard-enabled", true);
+      if($(document).data("keyboard-bound")) { return; }
+      
+      $(document).keydown(function(e) {
+        if($(document).data("keyboard-enabled") === false) { return; }
+        if (/(input|textarea|select)/i.test(e.target.nodeName)) { return; }
+        
+        var keyPressed = String.fromCharCode(e.which);
+        
+        if($.jitter.keyboard.mappings[keyPressed] || $.jitter.keyboard.mappings[e.which]) {
+          e.preventDefault();
+          $.jitter.keyboard.mappings[keyPressed] ? $.jitter.keyboard.mappings[keyPressed]() : $.jitter.keyboard.mappings[e.which]();
+        }
+        
+        var number = new Number(keyPressed);
+        if(number && number >= 0) {
+          var anch = $(".jitter-filters a:eq(" + number + ")");
+          if(anch) { e.preventDefault(); anch.trigger("click"); }
+        }
       });
-    };
-    var setCurrentToFirstTweet = function() { triggerTweet($("div.tweet:visible:first")); };
-    var setCurrentToNextTweet = function() { triggerTweet($("div.tweet.current").nextAll(":visible:first")); };
-    var setCurrentToPrevTweet = function() { triggerTweet($("div.tweet.current").prevAll(":visible:first")); };
-    var setCurrentToLastTweet = function() { triggerTweet($("div.tweet:visible:last")); };
-    var markAllAsRead = function() { }
-    $(document).keydown(function(e) {
-      if (/(input|textarea|select)/i.test(e.target.nodeName)) { return; }
-
-      var keyPressed = String.fromCharCode(e.which);
       
-      var keyMappings = {
-        "H": hideVisibleTweets,
-        "U": showHiddenTweets,
-        "O": openTweetAuthorTwitterPage,
-        "P": openTweetLinkedURLs,
-        "J": setCurrentToFirstTweet,
-        "37": setCurrentToFirstTweet,
-        "I": setCurrentToPrevTweet,
-        "38": setCurrentToPrevTweet,
-        "L": setCurrentToLastTweet,
-        "39": setCurrentToLastTweet,
-        "K": setCurrentToNextTweet,
-        "40": setCurrentToNextTweet
-      };
-      
-      if(keyMappings[keyPressed] || keyMappings[e.which]) {
-        e.preventDefault();
-        keyMappings[keyPressed] ? keyMappings[keyPressed]() : keyMappings[e.which]();
-      }
-      
-      var number = new Number(keyPressed);
-      if(number && number >= 0) {
-        var anch = $(".jitter-filters a:eq(" + number + ")");
-        if(anch) { e.preventDefault(); anch.trigger("click"); }
-      }
-    });
-    $(document).data("keypressesBound", true);
+      $(document).data("keyboard-bound", true);
+      $.log("Keyboard enabled");
+    },
+    disable: function() {
+      $(document).data("keyboard-enabled", false);
+      $.log("Keyboard disabled");
+    },
+    mappings: {
+      "I": {
+        fn: $.jitter.window.markAsRead,
+        description: "Mark visible tweets as read"
+      },
+      "O": $.jitter.window.currentTweet.openAuthorTwitterLink,
+      "P": $.jitter.window.currentTweet.openLinks,
+      "37": $.jitter.window.currentTweet.setToFirst,
+      "38": $.jitter.window.currentTweet.setToPrevious,
+      "39": $.jitter.window.currentTweet.setToLast,
+      "40": $.jitter.window.currentTweet.setToNext
+    }
   };
 })(jQuery);

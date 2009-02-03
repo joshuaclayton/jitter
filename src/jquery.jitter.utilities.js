@@ -35,10 +35,10 @@ String.prototype.strip = function() {
     userURL: function(tweet) {
       var username, displayName;
 
-      if(typeof(tweet) === "object") {
+      if(typeof(tweet) == "object") {
         username    = $.twitter.username(tweet);
         displayName = $.twitter.displayName(tweet);
-      } else if(typeof(tweet) === "string") {
+      } else if(typeof(tweet) == "string") {
         username = tweet.replace(/\@/, '');
         displayName = tweet;
       }
