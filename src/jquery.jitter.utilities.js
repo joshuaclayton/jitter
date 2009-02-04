@@ -43,20 +43,20 @@ String.prototype.strip = function() {
         displayName = tweet;
       }
 
-      return $("<a/>").attr("href", $.twitter.urls.user.interpolate({username: username})).html(displayName);
+      return $("<a />").attr({href: $.twitter.urls.user.interpolate({username: username}), target: "_blank"}).html(displayName);
     },
     tweetURL: function(tweet) {
       return $.twitter.urls.status.interpolate({username: $.twitter.username(tweet), id: tweet.id});
     },
     image: function(tweet) {
-      return $("<img width='48' height='48' />").attr({src: (tweet.user ? tweet.user.profile_image_url : tweet.profile_image_url)});
+      return $("<img />").attr({src: (tweet.user ? tweet.user.profile_image_url : tweet.profile_image_url), width: 48, height: 48});
     },
     linkedText: function(tweet) {
       var text = tweet.text,
           urlMatches = text.match(/https?\:\/\/[^"\s\<\>]*[^.,;'">\:\s\<\>\)\]\!]/g);
       if(urlMatches) {
         $.each(urlMatches, function(idx, item) {
-          text = text.replace(RegExp(item, "g"), '<a href="' + item + '">' + item + '</a>');
+          text = text.replace(RegExp(item, "g"), $("<a/>").attr({href: item, target: "_blank"}).html(item).outerHTML());
         });
       }
 

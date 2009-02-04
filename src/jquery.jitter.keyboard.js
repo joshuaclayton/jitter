@@ -10,9 +10,11 @@
         
         var keyPressed = String.fromCharCode(e.which);
         
-        if($.jitter.keyboard.mappings[keyPressed] || $.jitter.keyboard.mappings[e.which]) {
+        var mappedKeyboardAction = $.jitter.keyboard.mappings[keyPressed] || $.jitter.keyboard.mappings[e.which];
+
+        if(mappedKeyboardAction) {
           e.preventDefault();
-          $.jitter.keyboard.mappings[keyPressed] ? $.jitter.keyboard.mappings[keyPressed]() : $.jitter.keyboard.mappings[e.which]();
+          mappedKeyboardAction.fn.apply(this, mappedKeyboardAction.args);
         }
         
         var number = new Number(keyPressed);
@@ -23,23 +25,44 @@
       });
       
       $(document).data("keyboard-bound", true);
-      $.log("Keyboard enabled");
     },
     disable: function() {
       $(document).data("keyboard-enabled", false);
-      $.log("Keyboard disabled");
     },
     mappings: {
-      "I": {
-        fn: $.jitter.window.markAsRead,
-        description: "Mark visible tweets as read"
+      "R": {
+        fn: $.jitter.window.tweets.markAsRead,
+        args: [{visible: true, feed: $.jitter.window.currentFeed()}],
+        description: "Mark all visible tweets as read"
       },
-      "O": $.jitter.window.currentTweet.openAuthorTwitterLink,
-      "P": $.jitter.window.currentTweet.openLinks,
-      "37": $.jitter.window.currentTweet.setToFirst,
-      "38": $.jitter.window.currentTweet.setToPrevious,
-      "39": $.jitter.window.currentTweet.setToLast,
-      "40": $.jitter.window.currentTweet.setToNext
+      "O": {
+        fn: $.jitter.window.tweets.current.openAuthorTwitterLink,
+        description: "Open current tweet author's Twitter page"
+      },
+      "P": {
+        fn: $.jitter.window.tweets.current.openLinks,
+        description: "Open all links within current tweet"
+      },
+      "37": {
+        fn: $.jitter.window.tweets.current.setToFirst,
+        description: "Navigate to first tweet",
+        key: "&larr;"
+      },
+      "38": {
+        fn: $.jitter.window.tweets.current.setToPrevious,
+        description: "Navigate to previous tweet",
+        key: "&uarr;"
+      },
+      "39": {
+        fn: $.jitter.window.tweets.current.setToLast,
+        description: "Navigate to last tweet",
+        key: "&rarr;"
+      },
+      "40": {
+        fn: $.jitter.window.tweets.current.setToNext,
+        description: "Navigate to next tweet",
+        key: "&darr;"
+      }
     }
   };
 })(jQuery);

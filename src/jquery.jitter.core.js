@@ -30,6 +30,8 @@
     };
     
     self.start = function() {
+      $(document).trigger("jitter-started", {jitter: self});
+      
       updateTweets();
       if(!self.timer) {
         self.timer = $.timer(calculateRefreshRate(), function(t) { updateTweets(); });

@@ -1,4 +1,4 @@
-// tweet read handler
+// tweet read handler;
 $(document).bind("jitter-tweet-read", function(event, info) {
   var $tweetElements = info.tweets;
   $tweetElements.siblings(".current").removeClass("current").end().addClass("read");
@@ -15,7 +15,6 @@ $(document).bind("jitter-tweet-read", function(event, info) {
   var handleTweet = function(tweet) {
     if($(tweet).data("tweet-read") === true) { return; }
     
-    $.log("handle tweet");
     var $tweet = $(tweet);
     var unreadCountHandle = "jitter-unread-" + $tweet.data("jitter").feed.className,
         unreadCount = $(document).data(unreadCountHandle);
@@ -34,19 +33,19 @@ $(document).bind("jitter-tweet-read", function(event, info) {
 // building tweet HTML / appending to document
 $(document).bind("jitter-success", function(event, info) {
   var tweets = info.data,
-      $target = $(document).data("jitter-element-tweets");
+      $target = $.jitter.window.container();
   
   if(!$target) { return; }
   
   if(tweets.length) {
     var $wrapper = $("<div/>");
     $.each(tweets, function(index, tweet) {
-      $.jitter.window.buildTweetHTML(tweet, info.jitter).appendTo($wrapper);
+      $.jitter.window.build.tweet(tweet, info.jitter).appendTo($wrapper);
     });
     
     var $tweetElements = $wrapper.children().hide();
     
-    $target.find(".tweets")[$target.find(".tweet").length ? "prepend" : "append"]($tweetElements);
+    $target.find(".tweets").prepend($tweetElements);
     
     if($.jitter.window.currentlyFilteredToFeed(info.jitter.feed) || $.jitter.window.currentlyFilteredToAll()) {
       $tweetElements.fadeIn("slow");
@@ -54,28 +53,38 @@ $(document).bind("jitter-success", function(event, info) {
   }
 });
 
-// refresh timestamps
+// refresh timestamps and update unread counts
 $(document).bind("jitter-success", function(event, info) {
   $.jitter.window.refreshTimestamps();
   $(document).data("jitter-unread", ($(document).data("jitter-unread") || 0) + info.data.length);
   $(document).data("jitter-unread-" + info.jitter.feed.className, ($(document).data("jitter-unread-" + info.jitter.feed.className) || 0) + info.data.length);
 });
 
-$(document).bind("jitter.filter.change", function(event, info) {
-  $(document).data("jitter.filter.current", info.jitter);
+// create links when jitter starts
+$(document).bind("jitter-started", function(event, info) {
+  var jitter = info.jitter;
+  $.jitter.window.build.filter(jitter).appendTo($(".jitter-filters"));
+});
+
+$(document).bind("jitter-change", function(event, info) {
+  if(info.jitter.feed.className) {
+    $("div.tweet:not(." + info.jitter.feed.className + ")").hide();
+    $("div.tweet." + info.jitter.feed.className).show();
+  } else {
+    $("div.tweet").show();
+  }
+  $.jitter.window.tweets.current.setToFirst();
 });
 
 $(document).bind("setData", function(e, key, val) {
-  if(/jitter-unread/.test(key)) {
-    $.log("setting data");
+  if(/^jitter-unread$/.test(key)) {
     var $title = $("head title"),
         strippedTitle = $title.html().replace(/\s+\(.+\)/, '');
     $title.html(strippedTitle + " (" + val + ")");
-    if(window.document.title) {
-      window.document.title = $title.html();
-    }
     
-    $("head title").data("unreadCount", $(document).data("jitter-unread"));
+    if(window.document.title) { window.document.title = $title.html(); }
+    if(window.fluid)          { window.fluid.dockBadge = val ? val : null; }
+  } else if(/^jitter-unread\-(.+)$/.test(key)) {
     var matches = key.match(/^jitter-unread\-(.+)$/);
     if(matches){
       var className = matches[1];
@@ -83,22 +92,18 @@ $(document).bind("setData", function(e, key, val) {
         $(".jitter-filter." + className).data("unreadCount", val);
       }
     }
-    
-    if(window.fluid) {
-      if($(document).data("jitter-unread") > 0) {
-        window.fluid.dockBadge = $(document).data("jitter-unread");
-      } else {
-        window.fluid.dockBadge = null;
-      }
-    }
+  }
+});
+
+$(document).bind("setData", function(e, key, val) {
+  if(/^jitter-current$/.test(key)) {
+    $(document).trigger("jitter-change", {jitter: val});
   }
 });
 
 $(document).ready(function() {
-  $(document).data("jitter-element-tweets", $("#content"));
+  $.jitter.window.build.initialPage();
   $(document).data("jitter-trackUnreadCounts", true);
-  var j1 = $.jitter();
-  $(document).data("jitter-filter-current", j1.feed);
-  j1.start();
+  $.jitter().start();
   $.jitter.keyboard.enable();
 });

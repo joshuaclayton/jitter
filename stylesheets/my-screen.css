@@ -5,11 +5,12 @@ a {color: #333;}
 
 .jitter-filters { position: fixed; top: 0;}
 .jitter-filters h1 { text-align: center; font-weight: bold; text-transform: uppercase; color: #a33; padding: .5em 0; font-size: 3.25em; border-bottom: 1px solid #dfdfdf; margin-bottom: 0;}
-.jitter-filters a {display: block; padding: .5em .75em; text-decoration: none; position: relative; border-bottom: 1px solid #dfdfdf; color: #777; text-transform: uppercase;}
+.jitter-filter {display: block; padding: .5em .75em; text-decoration: none; position: relative; border-bottom: 1px solid #dfdfdf; color: #777; text-transform: uppercase;}
+/*.jitter-filters a {display: block; padding: .5em .75em; text-decoration: none; position: relative; border-bottom: 1px solid #dfdfdf; color: #777; text-transform: uppercase;}
 .jitter-filters a:hover {background: #fafafa;}
 .jitter-filters a.active {font-weight: bold; color: #555;}
-.jitter-filters a.active:hover { background: transparent; cursor: default;}
-.jitter-filters a .unreadCount {
+.jitter-filters a.active:hover { background: transparent; cursor: default;}*/
+.jitter-filters .unreadCount {
   position: absolute;
   text-align: center; 
   padding: .25em .5em; 
