@@ -1,7 +1,6 @@
 String.prototype.cssClassify = function(sep) {
   sep = sep || "-";
-  var result = this;
-  return result.replace(/[^\x00-\x7F]+/, '')
+  return this.replace(/[^\x00-\x7F]+/, '')
     .replace(/[^\w\-_\+]+/g, sep)
     .replace(new RegExp(sep + "+"), sep)
     .replace(new RegExp("^" + sep + "|" + sep + "$"), '')
@@ -21,9 +20,7 @@ String.prototype.interpolate = function(obj) {
 };
 
 String.prototype.strip = function() {
-  var result = this;
-  result = result.replace(/^ +| +$/g, '');
-  return result;
+  return this.replace(/^ +| +$/g, '');
 };
 
 (function($) {
@@ -34,7 +31,7 @@ String.prototype.strip = function() {
     },
     userURL: function(tweet) {
       var username, displayName;
-
+      
       if(typeof(tweet) == "object") {
         username    = $.twitter.username(tweet);
         displayName = $.twitter.displayName(tweet);
@@ -42,7 +39,7 @@ String.prototype.strip = function() {
         username = tweet.replace(/\@/, '');
         displayName = tweet;
       }
-
+      
       return $("<a />").attr({href: $.twitter.urls.user.interpolate({username: username}), target: "_blank"}).html(displayName);
     },
     tweetURL: function(tweet) {
@@ -53,21 +50,21 @@ String.prototype.strip = function() {
     },
     linkedText: function(tweet) {
       var text = tweet.text,
-          urlMatches = text.match(/https?\:\/\/[^"\s\<\>]*[^.,;'">\:\s\<\>\)\]\!]/g);
+          urlMatches = text.match(/https?\:\/\/[^"\s\<\>]*[^.,;'">\:\s\<\>\)\]\!]/g),
+          twitterReplies = text.match(/(\@\w+)/g);
+      
       if(urlMatches) {
         $.each(urlMatches, function(idx, item) {
           text = text.replace(RegExp(item, "g"), $("<a/>").attr({href: item, target: "_blank"}).html(item).outerHTML());
         });
       }
-
-      var twitterReplies = text.match(/(\@\w+)/g);
-
+      
       if(twitterReplies) {
         $.each(twitterReplies, function(idx, item) {
           text = text.replace(RegExp(item, "g"), $.twitter.userURL(item).outerHTML());
         });
       }
-
+      
       return text;
     },
     timestamp: function(tweet) {
@@ -105,33 +102,13 @@ String.prototype.strip = function() {
         });
     };
     
-    var $inputs = $("<div></div>").append(this).find("input");
-    var $textareas = $("<div></div>").append(this).find("textarea");
+    var $inputs = $("<div/>").append(this).find("input");
+    var $textareas = $("<div/>").append(this).find("textarea");
     
     $.each($inputs, handleItem);
     $.each($textareas, handleItem);
     
     return this;
-  };
-})(jQuery);
-
-(function($) {
-  var binder = function(e, dataKey, dataValue) {
-    var $this = $(this),
-        oldValue = $this.data(dataKey),
-        newValue = dataValue,
-        passed = {
-          attr: dataKey,
-          from: oldValue,
-          to:   newValue
-        };
-    if(oldValue !== newValue) { $this.trigger(dataKey + "Changed", passed); $this.trigger("dataChanged", passed); }
-  };
-  
-  $.fn.observeData = function() {
-    return $(this).each(function() {
-      $(this).bind("setData", binder);
-    });
   };
 })(jQuery);
 
@@ -168,19 +145,6 @@ String.prototype.strip = function() {
     var options = $.extend({}, $.jitter.defaults, settings),
         self = {feed: $.jitter.feeds.process(options)};
     
-    var calculateRefreshRate = function() {
-      return 1000 * options.refreshRate;
-    };
-    
-    (function() {
-      if(self.guid) { return; }
-      self.guid = "guid";
-    })();
-    
-    var triggerData = function(data) {
-      return {data: data, jitter: self};
-    };
-    
     var updateTweets = function() {
       $.ajax({
         type: "GET",
@@ -189,19 +153,20 @@ String.prototype.strip = function() {
         success: function(data) {
           if(data.results) { data = data.results; }
           if(!!self.feed.trackSince && data[0]) { self.sinceID = data[0].id; }
-          $(document).trigger("jitter-success", triggerData(data));
+          $(document).trigger("jitter-success", {data: data, jitter: self});
         }
       });
     };
     
     self.start = function() {
       $(document).trigger("jitter-started", {jitter: self});
-      
       updateTweets();
+      
       if(!self.timer) {
-        self.timer = $.timer(calculateRefreshRate(), function(t) { updateTweets(); });
-        this.stop = function() { self.timer.stop(); };
+        self.timer = $.timer(1000 * options.refreshRate, function(t) { updateTweets(); });
+        this.stop = function() { $(document).trigger("jitter-stopped", {jitter: self}); self.timer.stop(); return self; };
       }
+      return self;
     };
     
     return self;
@@ -346,267 +311,89 @@ String.prototype.strip = function() {
     }
   };
 })(jQuery);
-(function($) {
-  $.jitter.builder = function(target, options) {
-    var builder = {},
-        self = {};
-    options = options || {};
-    
-    var showTweets = function(tweetsParent, tweetClass, numberOfTweetsToDisplay) {
-      tweetsParent
-        .find(".tweet").hide().end()
-        .find(tweetClass + ":lt(" + numberOfTweetsToDisplay + "):not(.no-show)").show();
-    };
-    
-    var showTweetCount = function(anchor) {
-      var ct = $(anchor).data("unreadCount");
-      return (ct > 20 ? ct : 20);
-    };
-    
-    var handleTweets = function(tweets) {
-      var currentlyFilteredToSelf = false, currentlyFilteredToAll = false;
-      
-      if(target.find(".jitter-filters a.active").length) {
-        currentlyFilteredToSelf = target.find(".jitter-filters a.active").attr("id").indexOf(builder.cssClass()) >= 0;
-      }
-      
-      currentlyFilteredToAll = target.find(".jitter-filters a.active").length ? (target.find(".jitter-filters a.active").attr("class").match("allTweets") ? true : false) : false;
-      
-      $("div.timestamp").each(function(idx, item) {
-        $(item).html($.prettyDate($(item).attr("title")));
-      });
-      
-      if(tweets.length) {
-        var wrapper = $("<div/>");
-        $.each(tweets, function(index, tweet) {
-          $('\
-            <div class="tweet clearfix">\
-              <div class="meta span-5 prepend-1">\
-                <div class="author">\
-                  <div class="tweetImage span-2"/>\
-                  <div class="displayName span-3 last"/>\
-                </div>\
-                <div class="createdAt timestamp"/>\
-                <div class="backtrack"/>\
-              </div>\
-              <div class="tweetBody span-11 append-1 last"/>\
-            </div>')
-            .addClass(builder.cssClass())
-            .addClass("author-" + $.twitter.username(tweet))
-            .find(".tweetBody").html($.twitter.linkedText(tweet)).end()
-            .find(".author .displayName").html($.twitter.userURL(tweet)).end()
-            .find(".author .tweetImage").append($.twitter.image(tweet)).end()
-            .find(".createdAt")
-              .html($.twitter.prettyTimestamp(tweet))
-              .attr("title", $.twitter.timestamp(tweet))
-              .end()
-            .appendTo(wrapper);
-        });
-        
-        var tweetElements = $(wrapper.html()).hide();
-        
-        if(target.find(".tweet").length) {
-          target.find(".tweets").prepend(tweetElements);
-          if(currentlyFilteredToSelf || currentlyFilteredToAll) {
-            tweetElements.fadeIn("slow");
-          } else {
-            var correspondingAnchor = $("a#" + builder.cssClass());
-            var num = Number(correspondingAnchor.data("unreadCount")) + tweets.length;
-            if(num) { correspondingAnchor.data("unreadCount", num); }
-          }
-        } else {
-          target.find(".tweets").append(tweetElements);
-        }
-      }
-      
-      if(currentlyFilteredToSelf) {
-        showTweets(target, "." + builder.cssClass(), showTweetCount("#" + builder.cssClass()));
-      } else if(currentlyFilteredToAll) {
-        showTweets(target, ".tweet", 40);
-      }
-    };
-    
-    // initialize
-    (function() {
-      options.onUpdate = function(tweets) { handleTweets(tweets); };
-      builder.jitter = $.jitter(options);
-      builder.cssClass = function() { return builder.jitter.feedClass(); };
-      builder.feedTitle = function() { return builder.jitter.feedTitle(); };
-      builder.showTweets = showTweets;
-      builder.showTweetCount = showTweetCount;
+// tweet read handler;
+$(document).bind("jitter-tweet-read", function(event, info) {
+  info.tweets.siblings(".current").removeClass("current").end().addClass("read");
+  if(info.markAsCurrent)    { info.tweets.addClass("current"); }
+  if(info.scrollToCurrent)  { $(document).scrollTo($("div.tweet.current"), 200); }
+});
 
-      var filterBuilder = $.jitter.builder.filter(target, builder);
-      filterBuilder.buildFilterLink();
-      $.jitter.builder.forms(target, builder);
-      $.jitter.builder.cheatsheet(target);
-      builder.jitter.start();
-    })();
-    
-    return self;
-  };
+// building tweet HTML / appending to document
+$(document).bind("jitter-success", function(event, info) {
+  var tweets = info.data,
+      $target = $.jitter.window.container();
   
-  $.jitter.builder.filter = function(target, builder) {
-    var readFilterLink = function(anchor) {
-      var $anchor = $(anchor);
-      $anchor.data("unreadCount", 0);
-    };
-    
-    var triggerFilterLink = function(anchor) {
-      var $anchor = $(anchor);
-      $anchor
-        .siblings().removeClass("active").end()
-        .addClass("active")
-        .data("displayTweets", "." + $anchor.attr("id"));
-      readFilterLink(anchor);
-      builder.showTweets(target, $anchor.data("displayTweets"), builder.showTweetCount($anchor));
-      $(document).scrollTo($(".tweet:visible:eq(0)"), 200);
-    };
-    
-    (function() {
-      if(!target.find(".jitter-filters").length) {
-        var filters = $("<div class='jitter-filters span-6'/>").html("<h1>Jitter</h1>");
-
-        $("<a/>")
-          .html("All Feeds")
-          .attr({href: "#", id: "tweet"})
-          .addClass("active allTweets")
-          .click(function () { triggerFilterLink(this); return false; })
-          .appendTo(filters);
-        target.prepend(filters);
-      }
-    })();
-    
-    return {
-      buildFilterLink: function() {
-        $("<a/>")
-          .html(builder.feedTitle())
-          .attr({href: "#", id: builder.cssClass()})
-          .click(function() { triggerFilterLink(this); return false; })
-          .dblclick(function() { 
-            target.find("." + builder.cssClass()).remove();
-            $(this).remove(); 
-            builder.jitter.stop();
-            target.find(".jitter-filters a:first").trigger("click");
-          })
-          .observeData()
-          .bind("unreadCountChanged", function(e, data) {
-            var $this = $(this);
-            if(!$this.find(".unreadCount").length) {
-              $("<span class='unreadCount'/>").
-                html(data.to).
-                appendTo($this);
-            } else {
-              $this.
-                find(".unreadCount").
-                html(data.to);
-            }
-            if(data.to === 0) { $this.find(".unreadCount").remove(); }
-          })
-          .data("unreadCount", 0)
-          .appendTo(target.find(".jitter-filters"));
-      }
-    };
-  };
+  if(!$target) { return; }
   
-  $.jitter.builder.forms = function(target, builder) {
-    if(target.find(".forms").length) { return; }
-    
-    var wrapper = $("<div class='forms'/>");
-    
-    var buildFeedForm = function(feed, idx) {
-      var form = $("<form class='prepend-1 append-1 span-10'></form>")
-        .attr({action: "#"})
-        .submit(function() {
-          var $this = $(this);
-          var username  = $this.find("input[name=username]").val(),
-              password  = $this.find("input[name=password]").val(),
-              groupName = $this.find("input[name=groupName]").val(),
-              users     = $this.find("input[name=users]").val(),
-              query     = $this.find("input[name=query]").val();
-          
-          if(users) { users = users.split(/ *, */); }
-          var options = {};
-          
-          if(feed.requiresUsername) { options.username = username; }
-          if(feed.requiresPassword) { options.password = password; }
-          if(feed.performSearch)    { options.query = query; }
-          if(feed.filteredUsers)    { options.groupName = groupName; options.users = users; }
-
-          options.feed = feed;
-          target.jitter(options);
-          $this.find("input:not([type=submit])").val("");
-          $this.find("input").blur();
-          return false;
-        }),
-        fieldset = $("<fieldset/>").append($("<legend/>").html("<span>" + feed.simpleTitle + "</span>"));
-
-      if(feed.requiresUsername) {
-        $("<label for='username'>Username</label><input type='text' name='username' class='title span-8' value='Enter a Username' />").defaultValueActsAsHint().appendTo(fieldset);
-      }
-      
-      if(feed.requiresPassword) {
-        $("<label for='password'>Password</label><input type='password' name='password' class='title span-8' value='Password'/>").defaultValueActsAsHint().appendTo(fieldset);
-      }
-      
-      if(feed.performSearch) {
-        $("<label for='query'>Search</label><input type='text' name='query' class='title span-8' value='Enter a Search Term' />").defaultValueActsAsHint().appendTo(fieldset);
-      }
-      
-      if(feed.filteredUsers) {
-        $("<label for='groupName'>Group Name</label><input type='text' name='groupName' class='title span-8' value='Name of Your Group' />").defaultValueActsAsHint().appendTo(fieldset);
-        $("<label for='users'>Users</label><input type='text' name='users' class='title span-8' value='Comma-delimited List of Users' />").defaultValueActsAsHint().appendTo(fieldset);
-      }
-      
-      $("<input type='submit' value='Add Feed' />").appendTo(fieldset);
-      
-      var evn = !!(idx % 2 == 0);
-      $("<div class='jitterForm span-12'/>")
-        .addClass(evn ? "last" : "")
-        .append(form.append(fieldset))
-        .appendTo(wrapper);
-      if(evn) {
-        wrapper.append("<hr class='space' />");
-      }
-    };
-    
-    var index = 0;
-    
-    $.each($.jitter.feeds, function(feedName, item) {
-      if(item.simpleTitle) { index++; buildFeedForm(item, index); }
+  if(tweets.length) {
+    var $wrapper = $("<div/>");
+    $.each(tweets, function(index, tweet) {
+      $.jitter.window.build.tweet(tweet, info.jitter).appendTo($wrapper);
     });
     
-    target.append(wrapper);
-  };
-  
-  $.jitter.builder.cheatsheet = function(target) {
-    if(target.find('.cheatsheet').length) { return; }
+    var $tweetElements = $wrapper.children().hide().prependTo($target.find(".tweets"));
     
-    $("\
-      <div class='cheatsheet'>\
-        <h3>Keyboard Shortcuts</h3>\
-        <dl>\
-          <dt>I</dt>\
-          <dd>Navigate to previous tweet</dd>\
-          <dt>K</dt>\
-          <dd>Navigate to next tweet</dd>\
-          <dt>J</dt>\
-          <dd>Navigate to first tweet</dd>\
-          <dt>L</dt>\
-          <dd>Navigate to last tweet</dd>\
-          <dt>H</dt>\
-          <dd>Hide read tweets</dd>\
-          <dt>U</dt>\
-          <dd>Show hidden read tweets</dd>\
-          <dt>O</dt>\
-          <dd>Open user's Twitter page (in new window)</dd>\
-          <dt>P</dt>\
-          <dd>Open all links within tweet body (including @replies) (in new window)</dd>\
-        </dl>\
-      </div>\
-    ").appendTo(target);
-  };
-})(jQuery);(function($) {
-  $.fn.jitter = function(options) {
+    if($.jitter.window.currentlyFilteredToFeed(info.jitter.feed) || $.jitter.window.currentlyFilteredToAll()) {
+      $tweetElements.fadeIn("slow");
+    }
+  }
+});
 
-  };
-})(jQuery);
+// refresh timestamps and update unread counts
+$(document).bind("jitter-success", function(event, info) {
+  $.jitter.window.refreshTimestamps();
+  $(document).data("jitter-unread", ($(document).data("jitter-unread") || 0) + info.data.length);
+  $(document).data("jitter-unread-" + info.jitter.feed.className, ($(document).data("jitter-unread-" + info.jitter.feed.className) || 0) + info.data.length);
+});
+
+// tweet read/unread count
+$(document).bind("jitter-tweet-read", function(event, info) {
+  $.each(info.tweets, function(index, tweet) {
+    if($(tweet).data("tweet-read") === true) { return; }
+    var unreadCountHandle = "jitter-unread-" + $(tweet).data("jitter").feed.className,
+        unreadCount = $(document).data(unreadCountHandle);
+    $(tweet).data("tweet-read", true);
+    $(document).data("jitter-unread", $(document).data("jitter-unread") - 1);
+    $(document).data(unreadCountHandle, unreadCount - 1);
+  });
+});
+
+// create filter link when jitter starts
+$(document).bind("jitter-started", function(event, info) {
+  $.jitter.window.build.filter(info.jitter).appendTo($(".jitter-filters"));
+});
+
+$(document).bind("jitter-change", function(event, info) {
+  if(info.jitter.feed.className) {
+    $("div.tweet:not(." + info.jitter.feed.className + ")").hide();
+    $("div.tweet." + info.jitter.feed.className).show();
+  } else {
+    $("div.tweet").show();
+  }
+  $.jitter.window.tweets.current.setToFirst();
+});
+
+$(document).bind("setData", function(e, key, val) {
+  if(/^jitter-unread$/.test(key)) {
+    var $title = $("head title"),
+        strippedTitle = $title.html().replace(/\s+\(.+\)/, '');
+    $title.html(strippedTitle + " (" + val + ")");
+    
+    if(window.document.title) { window.document.title = $title.html(); }
+    if(window.fluid)          { window.fluid.dockBadge = val ? val : null; }
+  } else if(/^jitter-unread\-(.+)$/.test(key)) {
+    var matches = key.match(/^jitter-unread\-(.+)$/);
+    if(matches){
+      var className = matches[1];
+      if($(".jitter-filter." + className)) {
+        $(".jitter-filter." + className).data("unreadCount", val);
+      }
+    }
+  }
+});
+
+$(document).bind("setData", function(e, key, val) {
+  if(/^jitter-current$/.test(key)) {
+    $(document).trigger("jitter-change", {jitter: val});
+  }
+});

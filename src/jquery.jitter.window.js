@@ -1,6 +1,5 @@
 (function($) {
   var triggerTweet = function(tweets, options) {
-    $.log("tweets triggered: " + tweets.length);
     var opts = $.extend({}, {tweets:tweets, markAsCurrent: true, scrollToCurrent: true}, options);
     $(document).trigger("jitter-tweet-read", opts);
   };
@@ -15,14 +14,13 @@
       }
     },
     currentFeed: function() {
-      var currentJitter = $.jitter.window.currentJitter();
-      if(currentJitter) { return currentJitter.feed; }
+      if($.jitter.window.currentJitter()) { return $.jitter.window.currentJitter().feed; }
     },
     currentlyFilteredToFeed: function(feed) {
       return $.jitter.window.currentFeed() === feed;
     },
     currentlyFilteredToAll: function() {
-      return !$.jitter.window.currentFeed();
+      return $.jitter.window.currentFeed() === null;
     },
     currentlyFilteredClass: function() {
       if($.jitter.window.currentFeed()) { return "." + $.jitter.window.currentFeed().className; }
@@ -48,11 +46,11 @@
             </div>\
             <div class="tweetBody span-11 append-1 last"/>\
           </div>')
-          .addClass(feed.className)
-          .addClass("author-" + $.twitter.username(tweet))
+          .addClass(feed.className).addClass("author-" + $.twitter.username(tweet))
           .data("jitter", jitter)
           .click(function() {
             $(document).trigger("jitter-tweet-read", {tweets: $(this), markAsCurrent: true, scrollToCurrent: true});
+            return false;
           })
           .find(".tweetBody").html($.twitter.linkedText(tweet)).end()
           .find(".author .displayName").html($.twitter.userURL(tweet)).end()
@@ -95,27 +93,23 @@
       },
       initialPage: function() {
         if(!$.jitter.window.container) { return; }
-        $.jitter.window.container()
-          .append("<div class='jitter-filters span-6' /><div class='tweets span-18 prepend-6' />");
+        $.jitter.window.container().append("<div class='jitter-filters span-6'/><div class='tweets span-18 prepend-6'/>");
       },
       keyboardCheatSheet: function() {
         var $wrapper = $("<div class='cheatsheet'><dl></dl></div>");
         $.each($.jitter.keyboard.mappings, function(key, val) {
-          var $dt = $("<dt />").html(val.key || key),
-              $dd = $("<dd />").html(val.description);
+          var $dt = $("<dt/>").html(val.key || key),
+              $dd = $("<dd/>").html(val.description);
           $wrapper.find("dl").append($dt).append($dd);
         });
         return $wrapper;
       }
     },
-    findFilterLink: function(feed) {
-      return $(".jitter-filter." + feed.className);
-    },
     tweets: {
       markAsRead: function(options) {
-        var opts = $.extend({}, {visible: true}, options);
-
-        var $selector = $("div.tweet");
+        var opts = $.extend({}, {visible: true}, options),
+            $selector = $("div.tweet");
+        
         if(opts.visible) { $selector = $selector.siblings(":visible"); }
         if(opts.feed) { 
           if(typeof(opts.feed) == "string") {
@@ -124,9 +118,7 @@
             $selector = $selector.siblings("." + opts.feed.className);
           }
         }
-
-        $.log("Marking following tweets as read: " + $selector.selector);
-
+        
         triggerTweet($selector, {markAsCurrent: false, scrollToCurrent: false});
       },
       current: {

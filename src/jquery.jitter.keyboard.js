@@ -8,19 +8,12 @@
         if($(document).data("keyboard-enabled") === false) { return; }
         if (/(input|textarea|select)/i.test(e.target.nodeName)) { return; }
         
-        var keyPressed = String.fromCharCode(e.which);
+        var keyPressed = String.fromCharCode(e.which),
+            mappedKeyboardAction = $.jitter.keyboard.mappings[keyPressed] || $.jitter.keyboard.mappings[e.which];
         
-        var mappedKeyboardAction = $.jitter.keyboard.mappings[keyPressed] || $.jitter.keyboard.mappings[e.which];
-
         if(mappedKeyboardAction) {
           e.preventDefault();
           mappedKeyboardAction.fn.apply(this, mappedKeyboardAction.args);
-        }
-        
-        var number = new Number(keyPressed);
-        if(number && number >= 0) {
-          var anch = $(".jitter-filters a:eq(" + number + ")");
-          if(anch) { e.preventDefault(); anch.trigger("click"); }
         }
       });
       

@@ -14,10 +14,9 @@
     <script type="text/javascript" src="src/jquery.jitter.defaults.js"></script>
     <script type="text/javascript" src="src/jquery.jitter.errors.js"></script>
     <script type="text/javascript" src="src/jquery.jitter.feeds.js"></script>
-    <script type="text/javascript" src="src/jquery.fn.jitter.js"></script>
     <script type="text/javascript" src="src/jquery.jitter.window.js"></script>
     <script type="text/javascript" src="src/jquery.jitter.keyboard.js"></script>
-    <script type="text/javascript" src="src/test.js"></script>
+    <script type="text/javascript" src="src/jquery.jitter.bindings.js"></script>
     
     <link rel="stylesheet" href="stylesheets/screen.css" type="text/css" media="screen, projection" />
     <link rel="stylesheet" href="stylesheets/my-screen.css" type="text/css" media="screen, projection" />
@@ -26,6 +25,13 @@
     <!--[if lte IE 7]>
       <link rel="stylesheet" href="stylesheets/ie.css" type="text/css" media="screen, projection" />
     <![endif]-->
+    <script>
+      $(document).ready(function() {
+        $.jitter.window.build.initialPage();
+        $.jitter.window.currentJitter($.jitter().start());
+        $.jitter.keyboard.enable();
+      });
+    </script>
   </head>
   <body>
     <div class="container">
@@ -38,8 +44,7 @@
         </div>
         <hr/>
       </noscript>
-      <div id="content">
-      </div>
+      <div id="content"></div>
     </div>
   </body>
 </html>

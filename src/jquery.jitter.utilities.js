@@ -1,7 +1,6 @@
 String.prototype.cssClassify = function(sep) {
   sep = sep || "-";
-  var result = this;
-  return result.replace(/[^\x00-\x7F]+/, '')
+  return this.replace(/[^\x00-\x7F]+/, '')
     .replace(/[^\w\-_\+]+/g, sep)
     .replace(new RegExp(sep + "+"), sep)
     .replace(new RegExp("^" + sep + "|" + sep + "$"), '')
@@ -21,9 +20,7 @@ String.prototype.interpolate = function(obj) {
 };
 
 String.prototype.strip = function() {
-  var result = this;
-  result = result.replace(/^ +| +$/g, '');
-  return result;
+  return this.replace(/^ +| +$/g, '');
 };
 
 (function($) {
@@ -34,7 +31,7 @@ String.prototype.strip = function() {
     },
     userURL: function(tweet) {
       var username, displayName;
-
+      
       if(typeof(tweet) == "object") {
         username    = $.twitter.username(tweet);
         displayName = $.twitter.displayName(tweet);
@@ -42,7 +39,7 @@ String.prototype.strip = function() {
         username = tweet.replace(/\@/, '');
         displayName = tweet;
       }
-
+      
       return $("<a />").attr({href: $.twitter.urls.user.interpolate({username: username}), target: "_blank"}).html(displayName);
     },
     tweetURL: function(tweet) {
@@ -53,21 +50,21 @@ String.prototype.strip = function() {
     },
     linkedText: function(tweet) {
       var text = tweet.text,
-          urlMatches = text.match(/https?\:\/\/[^"\s\<\>]*[^.,;'">\:\s\<\>\)\]\!]/g);
+          urlMatches = text.match(/https?\:\/\/[^"\s\<\>]*[^.,;'">\:\s\<\>\)\]\!]/g),
+          twitterReplies = text.match(/(\@\w+)/g);
+      
       if(urlMatches) {
         $.each(urlMatches, function(idx, item) {
           text = text.replace(RegExp(item, "g"), $("<a/>").attr({href: item, target: "_blank"}).html(item).outerHTML());
         });
       }
-
-      var twitterReplies = text.match(/(\@\w+)/g);
-
+      
       if(twitterReplies) {
         $.each(twitterReplies, function(idx, item) {
           text = text.replace(RegExp(item, "g"), $.twitter.userURL(item).outerHTML());
         });
       }
-
+      
       return text;
     },
     timestamp: function(tweet) {
@@ -105,33 +102,13 @@ String.prototype.strip = function() {
         });
     };
     
-    var $inputs = $("<div></div>").append(this).find("input");
-    var $textareas = $("<div></div>").append(this).find("textarea");
+    var $inputs = $("<div/>").append(this).find("input");
+    var $textareas = $("<div/>").append(this).find("textarea");
     
     $.each($inputs, handleItem);
     $.each($textareas, handleItem);
     
     return this;
-  };
-})(jQuery);
-
-(function($) {
-  var binder = function(e, dataKey, dataValue) {
-    var $this = $(this),
-        oldValue = $this.data(dataKey),
-        newValue = dataValue,
-        passed = {
-          attr: dataKey,
-          from: oldValue,
-          to:   newValue
-        };
-    if(oldValue !== newValue) { $this.trigger(dataKey + "Changed", passed); $this.trigger("dataChanged", passed); }
-  };
-  
-  $.fn.observeData = function() {
-    return $(this).each(function() {
-      $(this).bind("setData", binder);
-    });
   };
 })(jQuery);
 

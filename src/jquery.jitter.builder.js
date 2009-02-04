@@ -229,32 +229,4 @@
     
     target.append(wrapper);
   };
-  
-  $.jitter.builder.cheatsheet = function(target) {
-    if(target.find('.cheatsheet').length) { return; }
-    
-    $("\
-      <div class='cheatsheet'>\
-        <h3>Keyboard Shortcuts</h3>\
-        <dl>\
-          <dt>I</dt>\
-          <dd>Navigate to previous tweet</dd>\
-          <dt>K</dt>\
-          <dd>Navigate to next tweet</dd>\
-          <dt>J</dt>\
-          <dd>Navigate to first tweet</dd>\
-          <dt>L</dt>\
-          <dd>Navigate to last tweet</dd>\
-          <dt>H</dt>\
-          <dd>Hide read tweets</dd>\
-          <dt>U</dt>\
-          <dd>Show hidden read tweets</dd>\
-          <dt>O</dt>\
-          <dd>Open user's Twitter page (in new window)</dd>\
-          <dt>P</dt>\
-          <dd>Open all links within tweet body (including @replies) (in new window)</dd>\
-        </dl>\
-      </div>\
-    ").appendTo(target);
-  };
 })(jQuery);
