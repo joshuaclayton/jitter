@@ -55,7 +55,13 @@ String.prototype.strip = function() {
       
       if(urlMatches) {
         $.each(urlMatches, function(idx, item) {
-          text = text.replace(RegExp(item, "g"), $("<a/>").attr({href: item, target: "_blank"}).html(item).outerHTML());
+          text = text.replace(
+            RegExp(item, "g"), 
+            $("<a/>")
+              .attr({href: item, target: "_blank"})
+              .html(item)
+              .outerHTML()
+          );
         });
       }
       
@@ -134,24 +140,18 @@ String.prototype.strip = function() {
 
 (function($) {
   $.log = function(text) {
-    if(window.console) {
+    if($.jitter.window.loggable()) {
       window.console.log(text);
-    } else {
-      alert(text);
     }
   };
   
-  $.benchmark = function() {
-    if(typeof(arguments[0]) === "function") {
-      fn = arguments[0];
-      description = "";
+  $.benchmark = function(description, fn) {
+    if($.jitter.window.loggable()) {
+      var d1 = new Date();
+      fn();
+      $.log(description + ": " + (new Date() - d1));
     } else {
-      description = arguments[0] || "";
-      fn = arguments[1] || function() {};
+      fn();
     }
-    var d1 = new Date();
-    var res = fn();
-    $.log(description + ": " + (new Date() - d1));
-    // return res;
   };
 })(jQuery);

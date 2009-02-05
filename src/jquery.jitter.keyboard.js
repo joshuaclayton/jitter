@@ -28,6 +28,14 @@
         args: [{visible: true, feed: $.jitter.window.currentFeed}],
         description: "Mark all visible tweets as read"
       },
+      "X": {
+        fn: $.jitter.window.tweets.current.destroy,
+        args: [{moveTo: function() { 
+          var $next = $("div.tweet.current").nextAll(":visible:first"),
+              $prev = $("div.tweet.current").prevAll(":visible:first");
+          return ($next.length ? $next : $prev); }}],
+        description: "Remove current tweet"
+      },
       "O": {
         fn: $.jitter.window.tweets.current.openAuthorTwitterLink,
         description: "Open current tweet author's Twitter page"

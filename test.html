@@ -27,13 +27,18 @@
     <![endif]-->
     <script>
       $(document).ready(function() {
-        $.jitter.window.build.initialPage();
-        $.jitter.window.currentJitter($.jitter().start());
-        $.jitter({query: "the", refreshRate: 20}).start();
-        $.jitter({query: "an", refreshRate: 20}).start();
-        $.jitter({query: "http", refreshRate: 20}).start();
-        $.jitter({query: "when", refreshRate: 20}).start();
-        $.jitter.keyboard.enable();
+        // $.timer(1000, function(t) { 
+        //   if(window.console && window.console.log) {
+            $.jitter.bindings();
+            $.jitter.window.build.initialPage();
+            $.jitter.window.currentJitter($.jitter().start({refreshRate: 10}));
+            // $.jitter({query: "blueprint css"}).start();
+            // $.jitter({query: "ruby on rails"}).start();
+            // $.jitter({query: "obama"}).start();
+            $.jitter.keyboard.enable();
+            // t.stop();
+        //   }
+        // });
       });
     </script>
   </head>

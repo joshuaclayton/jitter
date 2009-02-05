@@ -50,7 +50,7 @@
     },
     process: function(options) {
       options.currentFeed = typeof(options.feed) === "string" ? $.jitter.feeds[options.feed] : options.feed;
-      var self = {simpleTitle: options.currentFeed.simpleTitle};
+      var self = {simpleTitle: options.currentFeed.simpleTitle, trackSince: options.currentFeed.trackSince};
       
       (function() {
         var feedClassName = options.currentFeed.name;
@@ -86,7 +86,7 @@
           if(jitter.sinceID && options.currentFeed.trackSince) { requestParams.since_id = jitter.sinceID; }
           if(options.currentFeed.performSearch && options.query) { requestParams.q = options.query; }
           if(self.filteredUsers && options.users.length) { requestParams.q = $.map(options.users, function(item) { return "from:" + item; }).join(" OR "); }
-          if(addlParams) { requestParams = $.extend(requestParams, addlParams); }
+          if(addlParams) { requestParams = $.extend({}, requestParams, addlParams); }
           return requestParams;
         };
         
@@ -97,6 +97,8 @@
           if(feedItem.requiresPassword) { url = url.interpolate({password: options.password}); }
           
           var queryString = $.param(buildRequestParams(params));
+          $.log(queryString);
+          
           if(queryString.length) { url += "?" + queryString; }
           
           return url;
