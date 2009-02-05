@@ -141,10 +141,17 @@ String.prototype.strip = function() {
     }
   };
   
-  $.benchmark = function(fn) {
+  $.benchmark = function() {
+    if(typeof(arguments[0]) === "function") {
+      fn = arguments[0];
+      description = "";
+    } else {
+      description = arguments[0] || "";
+      fn = arguments[1] || function() {};
+    }
     var d1 = new Date();
     var res = fn();
-    $.log(new Date() - d1);
+    $.log(description + ": " + (new Date() - d1));
     // return res;
   };
 })(jQuery);(function($) {
@@ -468,7 +475,7 @@ String.prototype.strip = function() {
       },
       initialPage: function() {
         if(!$.jitter.window.container) { return; }
-        $.jitter.window.container().append("<div class='jitter-filters span-6'/><div class='tweets span-18 prepend-6'/>");
+        $.jitter.window.container().append("<div class='jitter-filters span-6'/><div id='tweets' class='span-18 prepend-6'/>");
       },
       keyboardCheatSheet: function() {
         var $wrapper = $("<div class='cheatsheet'><dl></dl></div>");
@@ -482,27 +489,23 @@ String.prototype.strip = function() {
     },
     tweets: {
       markAsRead: function(options) {
-        var $selector;
-
-        $.benchmark(function() {
-          $selector = $("div.tweet");
-        });
+        var selector = "#tweets ",
+            opts = $.extend({}, {visible: true}, options);
         
-        $.benchmark(function() {
-          var opts = $.extend({}, {visible: true}, options);
-          
-          if(opts.visible) { $selector = $selector.siblings(":visible"); }
-          if(opts.feed) {
-            if(typeof(opts.feed) == "function") { opts.feed = opts.feed(); }
-            if(typeof(opts.feed) == "string") {
-              $selector = $selector.siblings(opts.feed);
-            } else if(opts.feed.className) {
-              $selector = $selector.siblings("." + opts.feed.className);
-            }
+        if(opts.feed) {
+          if(typeof(opts.feed) == "function") { opts.feed = opts.feed(); }
+          if(typeof(opts.feed) == "string") {
+            selector += opts.feed;
+          } else if(opts.feed.className) {
+            selector += "." + opts.feed.className;
           }
-        });
+        }
         
-        $.benchmark(function() {
+        if(opts.visible) { selector += ":visible"; }
+        
+        var $selector = $(selector);
+
+        $.benchmark("trigger selected tweets", function() {
           triggerTweet($selector, {markAsCurrent: false, scrollToCurrent: false});
         });
       },
@@ -545,7 +548,7 @@ $(document).bind("jitter-success", function(event, info) {
       $.jitter.window.build.tweet(tweet, info.jitter).appendTo($wrapper);
     });
     
-    var $tweetElements = $wrapper.children().hide().prependTo($target.find("div.tweets"));
+    var $tweetElements = $wrapper.children().hide().prependTo($target.find("#tweets"));
     
     if($.jitter.window.currentlyFilteredToFeed(info.jitter.feed) || $.jitter.window.currentlyFilteredToAll()) {
       $tweetElements.fadeIn("slow", function() { $.jitter.window.tweets.current.scrollTo(); });
@@ -618,7 +621,7 @@ $(document).ready(function() {
     $.jitter.window.refreshTimestamps(); 
   });
   
-  $.timer(10 * 1000, function(t) {
-    $("div.tweet.read:not(.current)").slideUp();
-  });
+  // $.timer(10 * 1000, function(t) {
+  //   $("div.tweet.read:not(.current)").slideUp(200, function() {$(this).remove(); });
+  // });
 });

@@ -93,7 +93,7 @@
       },
       initialPage: function() {
         if(!$.jitter.window.container) { return; }
-        $.jitter.window.container().append("<div class='jitter-filters span-6'/><div class='tweets span-18 prepend-6'/>");
+        $.jitter.window.container().append("<div class='jitter-filters span-6'/><div id='tweets' class='span-18 prepend-6'/>");
       },
       keyboardCheatSheet: function() {
         var $wrapper = $("<div class='cheatsheet'><dl></dl></div>");
@@ -107,27 +107,23 @@
     },
     tweets: {
       markAsRead: function(options) {
-        var $selector;
-
-        $.benchmark(function() {
-          $selector = $("div.tweet");
-        });
+        var selector = "#tweets ",
+            opts = $.extend({}, {visible: true}, options);
         
-        $.benchmark(function() {
-          var opts = $.extend({}, {visible: true}, options);
-          
-          if(opts.visible) { $selector = $selector.siblings(":visible"); }
-          if(opts.feed) {
-            if(typeof(opts.feed) == "function") { opts.feed = opts.feed(); }
-            if(typeof(opts.feed) == "string") {
-              $selector = $selector.siblings(opts.feed);
-            } else if(opts.feed.className) {
-              $selector = $selector.siblings("." + opts.feed.className);
-            }
+        if(opts.feed) {
+          if(typeof(opts.feed) == "function") { opts.feed = opts.feed(); }
+          if(typeof(opts.feed) == "string") {
+            selector += opts.feed;
+          } else if(opts.feed.className) {
+            selector += "." + opts.feed.className;
           }
-        });
+        }
         
-        $.benchmark(function() {
+        if(opts.visible) { selector += ":visible"; }
+        
+        var $selector = $(selector);
+
+        $.benchmark("trigger selected tweets", function() {
           triggerTweet($selector, {markAsCurrent: false, scrollToCurrent: false});
         });
       },

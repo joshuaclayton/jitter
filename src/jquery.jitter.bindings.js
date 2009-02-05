@@ -22,7 +22,7 @@ $(document).bind("jitter-success", function(event, info) {
       $.jitter.window.build.tweet(tweet, info.jitter).appendTo($wrapper);
     });
     
-    var $tweetElements = $wrapper.children().hide().prependTo($target.find("div.tweets"));
+    var $tweetElements = $wrapper.children().hide().prependTo($target.find("#tweets"));
     
     if($.jitter.window.currentlyFilteredToFeed(info.jitter.feed) || $.jitter.window.currentlyFilteredToAll()) {
       $tweetElements.fadeIn("slow", function() { $.jitter.window.tweets.current.scrollTo(); });
@@ -95,7 +95,7 @@ $(document).ready(function() {
     $.jitter.window.refreshTimestamps(); 
   });
   
-  $.timer(10 * 1000, function(t) {
-    $("div.tweet.read:not(.current)").slideUp();
-  });
+  // $.timer(10 * 1000, function(t) {
+  //   $("div.tweet.read:not(.current)").slideUp(200, function() {$(this).remove(); });
+  // });
 });

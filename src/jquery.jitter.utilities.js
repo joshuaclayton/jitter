@@ -141,10 +141,17 @@ String.prototype.strip = function() {
     }
   };
   
-  $.benchmark = function(fn) {
+  $.benchmark = function() {
+    if(typeof(arguments[0]) === "function") {
+      fn = arguments[0];
+      description = "";
+    } else {
+      description = arguments[0] || "";
+      fn = arguments[1] || function() {};
+    }
     var d1 = new Date();
     var res = fn();
-    $.log(new Date() - d1);
+    $.log(description + ": " + (new Date() - d1));
     // return res;
   };
 })(jQuery);
