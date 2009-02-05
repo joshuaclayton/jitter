@@ -50,11 +50,7 @@
     },
     process: function(options) {
       options.currentFeed = typeof(options.feed) === "string" ? $.jitter.feeds[options.feed] : options.feed;
-      var self = {
-        performSearch:  options.currentFeed.performSearch,
-        trackSince:     options.currentFeed.trackSince,
-        simpleTitle:    options.currentFeed.simpleTitle
-      };
+      var self = {simpleTitle: options.currentFeed.simpleTitle};
       
       (function() {
         var feedClassName = options.currentFeed.name;
@@ -62,9 +58,7 @@
         if(options.currentFeed.performSearch)     { feedClassName = feedClassName.interpolate({query: options.query.cssClassify()}); }
         if(options.currentFeed.filteredUsers)     { feedClassName = feedClassName.interpolate({groupName: options.groupName.cssClassify()}); }
         self.className = feedClassName;
-      })();
-      
-      (function() {
+
         var feedTitleName = options.currentFeed.title;
         if(options.currentFeed.requiresUsername)  { feedTitleName = feedTitleName.interpolate({username: options.username}); }
         if(options.currentFeed.performSearch)     { feedTitleName = feedTitleName.interpolate({query: options.query}); }
@@ -89,8 +83,8 @@
         
         var buildRequestParams = function(addlParams) {
           var requestParams = {};
-          if(jitter.sinceID && self.trackSince) { requestParams.since_id = jitter.sinceID; }
-          if(self.performSearch && options.query) { requestParams.q = options.query; }
+          if(jitter.sinceID && options.currentFeed.trackSince) { requestParams.since_id = jitter.sinceID; }
+          if(options.currentFeed.performSearch && options.query) { requestParams.q = options.query; }
           if(self.filteredUsers && options.users.length) { requestParams.q = $.map(options.users, function(item) { return "from:" + item; }).join(" OR "); }
           if(addlParams) { requestParams = $.extend(requestParams, addlParams); }
           return requestParams;

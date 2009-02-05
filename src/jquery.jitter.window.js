@@ -27,7 +27,7 @@
       return "";
     },
     refreshTimestamps: function() {
-      $("div.timestamp").each(function(idx, item) {
+      $("div.timestamp:visible").each(function(idx, item) {
         $(item).html($.prettyDate($(item).attr("title")));
       });
     },
@@ -107,21 +107,32 @@
     },
     tweets: {
       markAsRead: function(options) {
-        var opts = $.extend({}, {visible: true}, options),
-            $selector = $("div.tweet");
+        var $selector;
+
+        $.benchmark(function() {
+          $selector = $("div.tweet");
+        });
         
-        if(opts.visible) { $selector = $selector.siblings(":visible"); }
-        if(opts.feed) { 
-          if(typeof(opts.feed) == "string") {
-            $selector = $selector.siblings(opts.feed);
-          } else if(opts.feed.className) {
-            $selector = $selector.siblings("." + opts.feed.className);
+        $.benchmark(function() {
+          var opts = $.extend({}, {visible: true}, options);
+          
+          if(opts.visible) { $selector = $selector.siblings(":visible"); }
+          if(opts.feed) {
+            if(typeof(opts.feed) == "function") { opts.feed = opts.feed(); }
+            if(typeof(opts.feed) == "string") {
+              $selector = $selector.siblings(opts.feed);
+            } else if(opts.feed.className) {
+              $selector = $selector.siblings("." + opts.feed.className);
+            }
           }
-        }
+        });
         
-        triggerTweet($selector, {markAsCurrent: false, scrollToCurrent: false});
+        $.benchmark(function() {
+          triggerTweet($selector, {markAsCurrent: false, scrollToCurrent: false});
+        });
       },
       current: {
+        scrollTo:       function() { $(document).scrollTo($("div.tweet.current"), 200); },
         setToFirst:     function() { triggerTweet($("div.tweet:visible:first")); },
         setToNext:      function() { triggerTweet($("div.tweet.current").nextAll(":visible:first")); },
         setToPrevious:  function() { triggerTweet($("div.tweet.current").prevAll(":visible:first")); },

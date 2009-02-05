@@ -25,7 +25,7 @@
     mappings: {
       "R": {
         fn: $.jitter.window.tweets.markAsRead,
-        args: [{visible: true, feed: $.jitter.window.currentFeed()}],
+        args: [{visible: true, feed: $.jitter.window.currentFeed}],
         description: "Mark all visible tweets as read"
       },
       "O": {

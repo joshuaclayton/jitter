@@ -140,4 +140,11 @@ String.prototype.strip = function() {
       alert(text);
     }
   };
+  
+  $.benchmark = function(fn) {
+    var d1 = new Date();
+    var res = fn();
+    $.log(new Date() - d1);
+    // return res;
+  };
 })(jQuery);
