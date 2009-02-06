@@ -23,7 +23,7 @@
       $(document).data("keyboard-enabled", false);
     },
     mappings: {
-      "R": {
+      "A": {
         fn: $.jitter.window.tweets.markAsRead,
         args: [{visible: true, feed: $.jitter.window.currentFeed}],
         description: "Mark all visible tweets as read"

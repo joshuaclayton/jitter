@@ -34,7 +34,7 @@
             $.jitter.window.build.tweet(tweet, info.jitter).appendTo($wrapper);
           });
           
-          var $tweetElements = $wrapper.children().hide().prependTo($target.find("#tweets"));
+          var $tweetElements = $wrapper.children().hide()[$("div.tweet").filter("." + info.jitter.feed.className).length ? "prependTo" : "appendTo"]($target.find("#tweets"));
           
           if($.jitter.window.currentlyFilteredToFeed(info.jitter.feed) || $.jitter.window.currentlyFilteredToAll()) {
             $tweetElements.fadeIn("slow", function() { $.jitter.window.tweets.current.scrollTo(); });

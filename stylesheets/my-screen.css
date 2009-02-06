@@ -3,19 +3,18 @@
 body {color: #666;}
 a {color: #333;}
 
-.jitter-filters { position: fixed; top: 0;}
-.jitter-filters h1 { text-align: center; font-weight: bold; text-transform: uppercase; color: #a33; padding: .5em 0; font-size: 3.25em; border-bottom: 1px solid #dfdfdf; margin-bottom: 0;}
-.jitter-filter {display: block; padding: .5em .75em; text-decoration: none; position: relative; border-bottom: 1px solid #dfdfdf; color: #777; text-transform: uppercase;}
-/*.jitter-filters a {display: block; padding: .5em .75em; text-decoration: none; position: relative; border-bottom: 1px solid #dfdfdf; color: #777; text-transform: uppercase;}
-.jitter-filters a:hover {background: #fafafa;}
-.jitter-filters a.active {font-weight: bold; color: #555;}
-.jitter-filters a.active:hover { background: transparent; cursor: default;}*/
+.sidebar { position: fixed; top: 0;}
+.header h1 { -webkit-transform: rotate(-7.5deg); text-align: center; font-weight: bold; text-transform: uppercase; color: #a33; padding: .375em 0; font-size: 4em; margin-bottom: 0;}
+.jitter-filter {display: block; padding: .5em 0; text-decoration: none; position: relative; border-bottom: 1px solid #dfdfdf; color: #777; text-transform: uppercase;}
+.jitter-filter .show-filter { margin-left: 23px;}
+.jitter-filter .twitter-rss {position: absolute; left: 0px;}
+.jitter-filter .delete-filter {position: absolute; right: 3.5em;}
 .jitter-filters .unreadCount {
   position: absolute;
   text-align: center; 
   padding: .25em .5em; 
   top: .25em;
-  right: .5em;
+  right: 0;
   background: #d00; 
   width: 2em;
   color: #fff;
@@ -23,12 +22,14 @@ a {color: #333;}
   -moz-border-radius: .5em;
   -webkit-border-radius: .5em;
 }
-.tweet {border-bottom: 1px solid #dfdfdf; padding: 1em 0;}
-.tweet.read {opacity: 0.375;}
-.tweet.current {background: #ffe; color: #666; opacity: 1;}
+
+.tweet {border-bottom: 1px solid #dfdfdf; padding: 1em 0; opacity: .625;}
+.tweet.read {opacity: 0.25;}
+.tweet.current {background: #ffd; opacity: 1;}
 .tweet .createdAt {font-size: .9em;}
 .tweet .author .displayName {font-weight: bold; font-size: 1.2em;}
 .tweet .tweetBody {font-size: 1.5em; font-weight: 500;}
+.tweet .tweetImage img {position: relative; left: 14px;}
 
 .forms { padding-top: 1em; clear: both;}
 .jitterForm {background: #f5f5f5;}

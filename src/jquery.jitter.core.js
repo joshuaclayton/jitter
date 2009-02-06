@@ -1,7 +1,8 @@
 (function($) {
   $.jitter = function(settings) {
     var options = $.extend({}, $.jitter.defaults, settings),
-        self = {feed: $.jitter.feeds.process(options)};
+        self = {feed: $.jitter.feeds.process(options)},
+        tweets = false;
     
     var updateTweets = function() {
       $.ajax({
@@ -11,7 +12,9 @@
         success: function(data) {
           if(data.results) { data = data.results; }
           if(!!self.feed.trackSince && data[0]) { self.sinceID = data[0].id; }
+          if(tweets) { data = data.reverse(); }
           $(document).trigger("jitter-success", {data: data, jitter: self});
+          if(!tweets && data) { tweets = true; }
         }
       });
     };

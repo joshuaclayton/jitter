@@ -46,7 +46,7 @@
         var feed = jitter.feed;
         return $('\
           <div class="tweet clearfix">\
-            <div class="meta span-5 prepend-1">\
+            <div class="meta span-5">\
               <div class="author">\
                 <div class="tweetImage span-2"/>\
                 <div class="displayName span-3 last"/>\
@@ -54,7 +54,7 @@
               <div class="createdAt timestamp"/>\
               <div class="backtrack"/>\
             </div>\
-            <div class="tweetBody span-11 append-1 last"/>\
+            <div class="tweetBody span-11 last"/>\
           </div>')
           .addClass(feed.className).addClass("author-" + $.twitter.username(tweet))
           .data("jitter", jitter)
@@ -75,9 +75,9 @@
 
         return $('\
           <div class="jitter-filter">\
-            <a class="twitter-rss">RSS</a>\
+            <a class="twitter-rss"><img src="images/rss.png" /></a>\
             <a class="show-filter"></a>\
-            <a class="delete-filter">Delete Feed</a>\
+            <a class="delete-filter"><img src="images/delete.png" /></a>\
           </div>')
           .addClass(feed.className)
           .bind("setData", function(e, key, val) {
@@ -103,7 +103,7 @@
       },
       initialPage: function() {
         if(!$.jitter.window.container) { return; }
-        $.jitter.window.container().append("<div class='jitter-filters span-6'/><div id='tweets' class='span-18 prepend-6'/>");
+        $.jitter.window.container().append("<div class='span-8 sidebar'><div class='header span-8 last'><h1>Jitter</h1></div><div class='jitter-filters span-8 last'/></div><div id='tweets' class='span-16 prepend-8'/>");
       },
       keyboardCheatSheet: function() {
         var $wrapper = $("<div class='cheatsheet'><dl></dl></div>");
