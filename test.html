@@ -31,13 +31,11 @@
         //   if(window.console && window.console.log) {
             $.jitter.bindings();
             $.jitter.window.build.initialPage();
-            $.jitter.window.currentJitter($.jitter().start({refreshRate: 10}));
+            $.jitter.window.currentJitter($.jitter().start());
             $.jitter({query: "blueprint css"}).start();
             $.jitter({query: "ruby on rails"}).start();
-            $.jitter({query: "obama", refreshRate: 20}).start();
-            $.jitter({query: "the", refreshRate: 20}).start();
-            $.jitter({query: "http", refreshRate: 20}).start();
-            $.jitter({query: "her", refreshRate: 20}).start();
+            $.jitter({query: "git"}).start();
+            $.jitter({feed: "groupTimeline", users: ["jstew1974", "jackbaty", "timkelty", "kswedberg"], groupName: "Fusionary Media"}).start();
             $.jitter.keyboard.enable();
             // t.stop();
         //   }

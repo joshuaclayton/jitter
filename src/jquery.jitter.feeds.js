@@ -85,7 +85,7 @@
           var requestParams = {};
           if(jitter.sinceID && options.currentFeed.trackSince) { requestParams.since_id = jitter.sinceID; }
           if(options.currentFeed.performSearch && options.query) { requestParams.q = options.query; }
-          if(self.filteredUsers && options.users.length) { requestParams.q = $.map(options.users, function(item) { return "from:" + item; }).join(" OR "); }
+          if(options.currentFeed.filteredUsers && options.users.length) { requestParams.q = $.map(options.users, function(item) { return "from:" + item; }).join(" OR "); }
           if(addlParams) { requestParams = $.extend({}, requestParams, addlParams); }
           return requestParams;
         };
