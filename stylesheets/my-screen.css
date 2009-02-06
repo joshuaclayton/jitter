@@ -1,21 +1,24 @@
+#tweets-archive { display: none; }
 .container noscript h1 {text-align: center; font-weight: bold; text-transform: uppercase; color: #a33; padding: 1em 0 .5em; font-size: 3.25em;}
 .container noscript p { font-size: 2em; color: #666; font-weight: bold; text-align: justify; letter-spacing: .035em;}
 body {color: #666;}
 a {color: #333;}
 
 .sidebar { position: fixed; top: 0;}
-.header h1 { -webkit-transform: rotate(-7.5deg); text-align: center; font-weight: bold; text-transform: uppercase; color: #a33; padding: .375em 0; font-size: 4em; margin-bottom: 0;}
+.header h1 { -webkit-transform: rotate(-7.5deg); text-align: center; font-weight: bold; text-transform: uppercase; color: #a33; padding: .25em 0 .375em 0; font-size: 4em; margin-bottom: 0;}
 .jitter-filter {display: block; padding: .5em 0; text-decoration: none; position: relative; border-bottom: 1px solid #dfdfdf; color: #777; text-transform: uppercase;}
-.jitter-filter .show-filter { margin-left: 23px;}
-.jitter-filter .twitter-rss {position: absolute; left: 0px;}
-.jitter-filter .delete-filter {position: absolute; right: 3.5em;}
+.jitter-filter.active {background: #fee;}
+.jitter-filter.active .show-filter {font-weight: bold;}
+.jitter-filter .show-filter { margin-left: 32px; text-decoration: none;}
+.jitter-filter .twitter-rss {position: absolute; left: 8px;}
+.jitter-filter .delete-filter {position: absolute; right: 6px; top: .62em;}
 .jitter-filters .unreadCount {
   position: absolute;
   text-align: center; 
   padding: .25em .5em; 
   top: .25em;
-  right: 0;
-  background: #d00; 
+  left: -3.75em;
+  background: #bbb; 
   width: 2em;
   color: #fff;
   font-weight: bold;
@@ -25,7 +28,8 @@ a {color: #333;}
 
 .tweet {border-bottom: 1px solid #dfdfdf; padding: 1em 0; opacity: .625;}
 .tweet.read {opacity: 0.25;}
-.tweet.current {background: #ffd; opacity: 1;}
+.tweet.current {background: #f5f5f5; opacity: 1;}
+/*.tweet.current {background: #ffd; opacity: 1;}*/
 .tweet .createdAt {font-size: .9em;}
 .tweet .author .displayName {font-weight: bold; font-size: 1.2em;}
 .tweet .tweetBody {font-size: 1.5em; font-weight: 500;}

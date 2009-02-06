@@ -23,10 +23,15 @@
       $(document).data("keyboard-enabled", false);
     },
     mappings: {
-      "A": {
-        fn: $.jitter.window.tweets.markAsRead,
+      "E": {
+        fn: $.jitter.window.tweets.read,
         args: [{visible: true, feed: $.jitter.window.currentFeed}],
         description: "Mark all visible tweets as read"
+      },
+      "A": {
+        fn: $.jitter.window.tweets.archive,
+        args: [{visible: true, feed: $.jitter.window.currentFeed}],
+        description: "Archive all visible tweets"
       },
       "X": {
         fn: $.jitter.window.tweets.current.destroy,

@@ -8,7 +8,7 @@
   
   var deleteTweet = function(tweets, options) {
     var opts = $.extend({}, {tweets:tweets}, options);
-    $.benchmark("trigger selected tweets", function() {
+    $.benchmark("delete selected tweets", function() {
       $(document).trigger("jitter-tweet-delete", opts);
     });
   };
@@ -56,11 +56,10 @@
             </div>\
             <div class="tweetBody span-11 last"/>\
           </div>')
-          .addClass(feed.className).addClass("author-" + $.twitter.username(tweet))
+          .addClass(feed.className).addClass("author-" + $.twitter.username(tweet)).attr("id", $.twitter.domID(tweet))
           .data("jitter", jitter)
           .click(function() {
             $(document).trigger("jitter-tweet-read", {tweets: $(this), markAsCurrent: true, scrollToCurrent: true});
-            return false;
           })
           .find(".tweetBody").html($.twitter.linkedText(tweet)).end()
           .find(".author .displayName").html($.twitter.userURL(tweet)).end()
@@ -102,8 +101,17 @@
             }).end();
       },
       initialPage: function() {
-        if(!$.jitter.window.container) { return; }
-        $.jitter.window.container().append("<div class='span-8 sidebar'><div class='header span-8 last'><h1>Jitter</h1></div><div class='jitter-filters span-8 last'/></div><div id='tweets' class='span-16 prepend-8'/>");
+        if(!$.jitter.window.container()) { return; }
+        $.jitter.window.container().append("\
+          <div class='span-8 sidebar'>\
+            <div class='header span-8 last'>\
+              <h1>Jitter</h1>\
+            </div>\
+            <div class='jitter-filters span-8 last'/>\
+          </div>\
+          <div id='tweets' class='span-16 prepend-8'/>\
+          <div id='tweets-archive' class='span-16 prepend-8'/>\
+        ");
       },
       keyboardCheatSheet: function() {
         var $wrapper = $("<div class='cheatsheet'><dl></dl></div>");
@@ -116,9 +124,9 @@
       }
     },
     tweets: {
-      markAsRead: function(options) {
+      read: function(options) {
         // TODO: CLEAN UP
-        var $allTweets = $('div.tweet'),
+        var $allTweets = $('#tweets div.tweet'),
           allTweetsLength = $allTweets.length,
           filteredTweets = [],
           tweetFilter = null,
@@ -157,12 +165,29 @@
         
         triggerTweet($selector, {markAsCurrent: false, scrollToCurrent: false});
       },
+      archive: function(options) {
+        var selector = "#tweets div.tweet",
+            opts = $.extend({}, {visible: true}, options);
+        if(opts.feed) {
+          if(typeof(opts.feed) === "function") { opts.feed = opts.feed(); }
+          if(typeof(opts.feed) === "string") {
+            selector += opts.feed;
+          } else if(opts.feed.className) {
+            selector += "." + opts.feed.className;
+          }
+        }
+        if(opts.visible) {
+          selector += ":visible";
+        }
+        
+        $(document).trigger("jitter-tweet-archive", {tweets: $(selector)});
+      },
       current: {
-        scrollTo:       function() { $(document).scrollTo($("div.tweet.current"), 200); },
-        setToFirst:     function() { triggerTweet($("div.tweet:visible:first")); },
-        setToNext:      function() { triggerTweet($("div.tweet.current").nextAll(":visible:first")); },
-        setToPrevious:  function() { triggerTweet($("div.tweet.current").prevAll(":visible:first")); },
-        setToLast:      function() { triggerTweet($("div.tweet:visible:last")); },
+        scrollTo:       function() { $(document).scrollTo($("#tweets div.tweet.current"), 200); },
+        setToFirst:     function() { triggerTweet($("#tweets div.tweet:visible:first")); },
+        setToNext:      function() { triggerTweet($("#tweets div.tweet.current").nextAll(":visible:first")); },
+        setToPrevious:  function() { triggerTweet($("#tweets div.tweet.current").prevAll(":visible:first")); },
+        setToLast:      function() { triggerTweet($("#tweets div.tweet:visible:last")); },
         destroy:        function() { 
           var $ele = null;
           if(arguments[0]) { $ele = arguments[0].moveTo(); }

@@ -29,6 +29,9 @@ String.prototype.strip = function() {
       user: "http://twitter.com/{username}",
       status: "http://twitter.com/{username}/status/{id}"
     },
+    domID: function(tweet) {
+      return "tweet-{id}".interpolate({id: tweet.id});
+    },
     userURL: function(tweet) {
       var username, displayName;
       
@@ -311,8 +314,6 @@ String.prototype.strip = function() {
           if(feedItem.requiresPassword) { url = url.interpolate({password: options.password}); }
           
           var queryString = $.param(buildRequestParams(params));
-          $.log(queryString);
-          
           if(queryString.length) { url += "?" + queryString; }
           
           return url;
@@ -350,10 +351,15 @@ String.prototype.strip = function() {
       $(document).data("keyboard-enabled", false);
     },
     mappings: {
-      "A": {
-        fn: $.jitter.window.tweets.markAsRead,
+      "E": {
+        fn: $.jitter.window.tweets.read,
         args: [{visible: true, feed: $.jitter.window.currentFeed}],
         description: "Mark all visible tweets as read"
+      },
+      "A": {
+        fn: $.jitter.window.tweets.archive,
+        args: [{visible: true, feed: $.jitter.window.currentFeed}],
+        description: "Archive all visible tweets"
       },
       "X": {
         fn: $.jitter.window.tweets.current.destroy,
@@ -403,7 +409,7 @@ String.prototype.strip = function() {
   
   var deleteTweet = function(tweets, options) {
     var opts = $.extend({}, {tweets:tweets}, options);
-    $.benchmark("trigger selected tweets", function() {
+    $.benchmark("delete selected tweets", function() {
       $(document).trigger("jitter-tweet-delete", opts);
     });
   };
@@ -451,11 +457,10 @@ String.prototype.strip = function() {
             </div>\
             <div class="tweetBody span-11 last"/>\
           </div>')
-          .addClass(feed.className).addClass("author-" + $.twitter.username(tweet))
+          .addClass(feed.className).addClass("author-" + $.twitter.username(tweet)).attr("id", $.twitter.domID(tweet))
           .data("jitter", jitter)
           .click(function() {
             $(document).trigger("jitter-tweet-read", {tweets: $(this), markAsCurrent: true, scrollToCurrent: true});
-            return false;
           })
           .find(".tweetBody").html($.twitter.linkedText(tweet)).end()
           .find(".author .displayName").html($.twitter.userURL(tweet)).end()
@@ -497,8 +502,17 @@ String.prototype.strip = function() {
             }).end();
       },
       initialPage: function() {
-        if(!$.jitter.window.container) { return; }
-        $.jitter.window.container().append("<div class='span-8 sidebar'><div class='header span-8 last'><h1>Jitter</h1></div><div class='jitter-filters span-8 last'/></div><div id='tweets' class='span-16 prepend-8'/>");
+        if(!$.jitter.window.container()) { return; }
+        $.jitter.window.container().append("\
+          <div class='span-8 sidebar'>\
+            <div class='header span-8 last'>\
+              <h1>Jitter</h1>\
+            </div>\
+            <div class='jitter-filters span-8 last'/>\
+          </div>\
+          <div id='tweets' class='span-16 prepend-8'/>\
+          <div id='tweets-archive' class='span-16 prepend-8'/>\
+        ");
       },
       keyboardCheatSheet: function() {
         var $wrapper = $("<div class='cheatsheet'><dl></dl></div>");
@@ -511,9 +525,9 @@ String.prototype.strip = function() {
       }
     },
     tweets: {
-      markAsRead: function(options) {
+      read: function(options) {
         // TODO: CLEAN UP
-        var $allTweets = $('div.tweet'),
+        var $allTweets = $('#tweets div.tweet'),
           allTweetsLength = $allTweets.length,
           filteredTweets = [],
           tweetFilter = null,
@@ -552,12 +566,29 @@ String.prototype.strip = function() {
         
         triggerTweet($selector, {markAsCurrent: false, scrollToCurrent: false});
       },
+      archive: function(options) {
+        var selector = "#tweets div.tweet",
+            opts = $.extend({}, {visible: true}, options);
+        if(opts.feed) {
+          if(typeof(opts.feed) === "function") { opts.feed = opts.feed(); }
+          if(typeof(opts.feed) === "string") {
+            selector += opts.feed;
+          } else if(opts.feed.className) {
+            selector += "." + opts.feed.className;
+          }
+        }
+        if(opts.visible) {
+          selector += ":visible";
+        }
+        
+        $(document).trigger("jitter-tweet-archive", {tweets: $(selector)});
+      },
       current: {
-        scrollTo:       function() { $(document).scrollTo($("div.tweet.current"), 200); },
-        setToFirst:     function() { triggerTweet($("div.tweet:visible:first")); },
-        setToNext:      function() { triggerTweet($("div.tweet.current").nextAll(":visible:first")); },
-        setToPrevious:  function() { triggerTweet($("div.tweet.current").prevAll(":visible:first")); },
-        setToLast:      function() { triggerTweet($("div.tweet:visible:last")); },
+        scrollTo:       function() { $(document).scrollTo($("#tweets div.tweet.current"), 200); },
+        setToFirst:     function() { triggerTweet($("#tweets div.tweet:visible:first")); },
+        setToNext:      function() { triggerTweet($("#tweets div.tweet.current").nextAll(":visible:first")); },
+        setToPrevious:  function() { triggerTweet($("#tweets div.tweet.current").prevAll(":visible:first")); },
+        setToLast:      function() { triggerTweet($("#tweets div.tweet:visible:last")); },
         destroy:        function() { 
           var $ele = null;
           if(arguments[0]) { $ele = arguments[0].moveTo(); }
@@ -575,18 +606,20 @@ String.prototype.strip = function() {
   };
 })(jQuery);(function($) {
   $.jitter.bindings = function() {
-    // tweet read handler;
     $(document).bind("jitter-tweet-read", function(event, info) {
-      $.benchmark("marking tweets read/current", function() {
-        var currentSiblings = info.tweets.siblings();
-        if(currentSiblings.length) {
-          currentSiblings.removeClass('current');
-        }
-        info.tweets.addClass("read");
+      var currentSiblings = info.tweets.siblings();
+      if(currentSiblings.length) {
+        currentSiblings.removeClass('current');
+      }
+      info.tweets.filter(":not(.tweet-read)").addClass("read");
       
-        if(info.markAsCurrent)    { info.tweets.addClass("current"); }
-        if(info.scrollToCurrent)  { $.jitter.window.tweets.current.scrollTo(); }
-      });
+      if(info.markAsCurrent)    { info.tweets.addClass("current"); }
+      if(info.scrollToCurrent)  { $.jitter.window.tweets.current.scrollTo(); }
+    });
+    
+    $(document).bind("jitter-tweet-archive", function(event, info) {
+      $(document).trigger("jitter-tweet-read", {tweets: info.tweets});
+      info.tweets.appendTo("#tweets-archive");
     });
     
     $(document).bind("jitter-tweet-delete", function(event, info) {
@@ -595,110 +628,94 @@ String.prototype.strip = function() {
       });
     });
     
-    // building tweet HTML / appending to document
     $(document).bind("jitter-success", function(event, info) {
-      $.benchmark("building HTML from tweets returned", function() {
-        var tweets = info.data,
-            $target = $.jitter.window.container();
-        
-        if(!$target || tweets.length == 0) { return; }
-        
-        if(tweets.length) {
-          var $wrapper = $("<div/>");
-          $.each(tweets, function(index, tweet) {
-            $.jitter.window.build.tweet(tweet, info.jitter).appendTo($wrapper);
-          });
-          
-          var $tweetElements = $wrapper.children().hide()[$("div.tweet").filter("." + info.jitter.feed.className).length ? "prependTo" : "appendTo"]($target.find("#tweets"));
-          
-          if($.jitter.window.currentlyFilteredToFeed(info.jitter.feed) || $.jitter.window.currentlyFilteredToAll()) {
-            $tweetElements.fadeIn("slow", function() { $.jitter.window.tweets.current.scrollTo(); });
-          }
-        }
+      var tweets = info.data,
+          $target = $.jitter.window.container();
+      
+      if(!$target || !tweets.length) { return; }
+      
+      var $wrapper = $("<div/>");
+      $.each(tweets, function(index, tweet) {
+        $.jitter.window.build.tweet(tweet, info.jitter).appendTo($wrapper);
       });
+      
+      var $tweetElements = $wrapper.children().hide()[$("#tweets div.tweet").filter("." + info.jitter.feed.className).length ? "prependTo" : "appendTo"]($target.find("#tweets"));
+      
+      if($.jitter.window.currentlyFilteredToFeed(info.jitter.feed) || $.jitter.window.currentlyFilteredToAll()) {
+        $tweetElements.fadeIn("slow");
+        $.jitter.window.tweets.current.scrollTo();
+      }
     });
-
-    // refresh timestamps and update unread counts
+    
     $(document).bind("jitter-success", function(event, info) {
       if(!info.data.length > 0) { return; }
-      $.benchmark("setting unread counts data within $(document)", function() {
-        $(document).data("jitter-unread", ($(document).data("jitter-unread") || 0) + info.data.length);
-        $(document).data("jitter-unread-" + info.jitter.feed.className, ($(document).data("jitter-unread-" + info.jitter.feed.className) || 0) + info.data.length);
-      });
+      $(document).data("jitter-unread", ($(document).data("jitter-unread") || 0) + info.data.length);
+      $(document).data("jitter-unread-" + info.jitter.feed.className, ($(document).data("jitter-unread-" + info.jitter.feed.className) || 0) + info.data.length);
     });
-
-    // tweet read/unread count
+    
     $(document).bind("jitter-tweet-read", function(event, info) {
-      $.benchmark("marking tweet(s) as read", function() {
-        var $unreadTweets = info.tweets.filter(":not(.tweet-read)");
-        
-        if($unreadTweets.filter($.jitter.window.currentlyFilteredClass()).length === $unreadTweets.length && $.jitter.window.currentFeed()) {
-          var unreadCountHandle = "jitter-unread-" + $.jitter.window.currentFeed().className,
+      var $unreadTweets = info.tweets.filter(":not(.tweet-read)");
+      
+      if(!$unreadTweets.length) { return; }
+      
+      if($unreadTweets.filter($.jitter.window.currentlyFilteredClass()).length === $unreadTweets.length && $.jitter.window.currentFeed()) {
+        var unreadCountHandle = "jitter-unread-" + $.jitter.window.currentFeed().className,
+            unreadCount = $(document).data(unreadCountHandle);
+        $(document).data(unreadCountHandle, unreadCount - $unreadTweets.length);
+      } else {
+        $unreadTweets.each(function(itx, tweet) {
+          var unreadCountHandle = "jitter-unread-" + $(tweet).data("jitter").feed.className,
               unreadCount = $(document).data(unreadCountHandle);
-          $(document).data(unreadCountHandle, unreadCount - $unreadTweets.length);
-        } else {
-          $unreadTweets.each(function(itx, tweet) {
-            var unreadCountHandle = "jitter-unread-" + $(tweet).data("jitter").feed.className,
-                unreadCount = $(document).data(unreadCountHandle);
-            $(document).data(unreadCountHandle, unreadCount - 1);
-          });
-        }
-        
-        $(document).data("jitter-unread", $(document).data("jitter-unread") - $unreadTweets.length);
-        $unreadTweets.addClass("tweet-read");
-      });
+          $(document).data(unreadCountHandle, unreadCount - 1);
+        });
+      }
+      
+      $(document).data("jitter-unread", $(document).data("jitter-unread") - $unreadTweets.length);
+      $unreadTweets.addClass("tweet-read");
     });
-
+    
     // create filter link when jitter starts
     $(document).bind("jitter-started", function(event, info) {
-      $.benchmark("building jitter filter link", function() {
-        $.jitter.window.build.filter(info.jitter).appendTo($(".jitter-filters"));
-      });
+      $.jitter.window.build.filter(info.jitter).appendTo($(".jitter-filters"));
     });
-
+    
     $(document).bind("jitter-change", function(event, info) {
-      $.benchmark("toggling filters within the view", function() {
-        if(info.jitter.feed.className) {
-          $("div.tweet").hide();
-          $("div.tweet").filter("." + info.jitter.feed.className).show();
-        } else {
-          $("div.tweet:hidden").show();
-        }
-      });
+      if(info.jitter.feed.className) {
+        $("#tweets div.tweet").hide();
+        $("#tweets div.tweet").filter("." + info.jitter.feed.className).show();
+        $(".jitter-filter").removeClass("active");
+        $(".jitter-filter").filter("." + info.jitter.feed.className).addClass("active");
+      } else {
+        $("#tweets div.tweet:hidden").show();
+      }
     });
-
+    
     $(document).bind("setData", function(e, key, val) {
       if(/^jitter-unread$/.test(key)) {
-        $.benchmark("changing unread count based on data change", function() {
-          var $title = $("head title"),
-              strippedTitle = $title.html().replace(/\s+\(.+\)/, '');
-          $title.html(strippedTitle + " (" + val + ")");
-          
-          if(window.document.title) { window.document.title = $title.html(); }
-          if(window.fluid)          { window.fluid.dockBadge = val ? val : null; }
-        });
+        var $title = $("head title"),
+            strippedTitle = $title.html().replace(/\s+\(.+\)/, '');
+        $title.html(strippedTitle + " (" + val + ")");
+        
+        if(window.document.title) { window.document.title = $title.html(); }
+        if(window.fluid)          { window.fluid.dockBadge = val ? val : null; }
       } else if(/^jitter-unread\-(.+)$/.test(key)) {
-        $.benchmark("specific jitter feed data changed", function() {
-          var matches = key.match(/^jitter-unread\-(.+)$/);
-          if(matches){
-            var className = matches[1];
-            if($(".jitter-filter." + className)) {
-              $(".jitter-filter." + className).data("unreadCount", val);
-            }
+        var matches = key.match(/^jitter-unread\-(.+)$/);
+        if(matches){
+          var className = matches[1];
+          if($(".jitter-filter." + className)) {
+            $(".jitter-filter." + className).data("unreadCount", val);
           }
-        });
+        }
       }
     });
-
+    
     $(document).bind("setData", function(e, key, val) {
-      if(/^jitter-current$/.test(key)) {
-        $(document).trigger("jitter-change", {jitter: val});
-      }
+      if(/^jitter-current$/.test(key)) { $(document).trigger("jitter-change", {jitter: val}); }
     });
-
+    
     $(document).ready(function() {
       $.timer(60 * 1000, function(t) {
-        $.jitter.window.refreshTimestamps(); 
+        $.jitter.window.refreshTimestamps();
       });
     });
   };

@@ -29,6 +29,9 @@ String.prototype.strip = function() {
       user: "http://twitter.com/{username}",
       status: "http://twitter.com/{username}/status/{id}"
     },
+    domID: function(tweet) {
+      return "tweet-{id}".interpolate({id: tweet.id});
+    },
     userURL: function(tweet) {
       var username, displayName;
       

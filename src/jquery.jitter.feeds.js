@@ -97,8 +97,6 @@
           if(feedItem.requiresPassword) { url = url.interpolate({password: options.password}); }
           
           var queryString = $.param(buildRequestParams(params));
-          $.log(queryString);
-          
           if(queryString.length) { url += "?" + queryString; }
           
           return url;

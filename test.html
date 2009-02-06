@@ -34,7 +34,10 @@
             $.jitter.window.currentJitter($.jitter().start({refreshRate: 10}));
             $.jitter({query: "blueprint css"}).start();
             $.jitter({query: "ruby on rails"}).start();
-            $.jitter({query: "obama"}).start();
+            $.jitter({query: "obama", refreshRate: 20}).start();
+            $.jitter({query: "the", refreshRate: 20}).start();
+            $.jitter({query: "http", refreshRate: 20}).start();
+            $.jitter({query: "her", refreshRate: 20}).start();
             $.jitter.keyboard.enable();
             // t.stop();
         //   }
