@@ -569,6 +569,7 @@ String.prototype.strip = function() {
       archive: function(options) {
         var selector = "#tweets div.tweet",
             opts = $.extend({}, {visible: true}, options);
+        
         if(opts.feed) {
           if(typeof(opts.feed) === "function") { opts.feed = opts.feed(); }
           if(typeof(opts.feed) === "string") {
@@ -577,10 +578,8 @@ String.prototype.strip = function() {
             selector += "." + opts.feed.className;
           }
         }
-        if(opts.visible) {
-          selector += ":visible";
-        }
         
+        if(opts.visible) { selector += ":visible"; }
         $(document).trigger("jitter-tweet-archive", {tweets: $(selector)});
       },
       current: {

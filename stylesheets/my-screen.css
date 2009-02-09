@@ -26,7 +26,7 @@ a {color: #333;}
   -webkit-border-radius: .5em;
 }
 
-.tweet {border-bottom: 1px solid #dfdfdf; padding: 1em 0; opacity: .625;}
+.tweet {border-bottom: 1px solid #dfdfdf; padding: 1em 0; opacity: .875;}
 .tweet.read {opacity: 0.25;}
 .tweet.current {background: #f5f5f5; opacity: 1;}
 /*.tweet.current {background: #ffd; opacity: 1;}*/
