@@ -103,13 +103,11 @@
     
     $(document).bind("jitter-change", function(event, info) {
       if(info.jitter.feed.className) {
-        $("#tweets .feed-wrapper").find(".current").removeClass("current");
-        $("#tweets .feed-wrapper").hide();
+        $("#tweets .feed-wrapper").hide().find(".current").removeClass("current");
         $("#tweets").find(info.jitter.feed.className.toCSSClass("div")).show();
-        $(".jitter-filter").removeClass("active");
-        $(".jitter-filter").filter(info.jitter.feed.className.toCSSClass()).addClass("active");
+        $(".jitter-filter").removeClass("active").filter(info.jitter.feed.className.toCSSClass()).addClass("active");
       } else {
-        $("#tweets div.tweet:hidden").show();
+        $("#tweets .feed-wrapper:hidden").show();
       }
     });
     
