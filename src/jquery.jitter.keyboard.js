@@ -19,9 +19,7 @@
       
       $(document).data("keyboard-bound", true);
     },
-    disable: function() {
-      $(document).data("keyboard-enabled", false);
-    },
+    disable: function() { $(document).data("keyboard-enabled", false); },
     mappings: {
       "E": {
         fn: $.jitter.window.tweets.read,

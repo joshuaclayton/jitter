@@ -49,22 +49,23 @@
       title: "Search Results for '{query}'"
     },
     process: function(options) {
+      options = $.extend({}, {groupName: "", query: "", username: "", password: ""}, options);
       options.currentFeed = typeof(options.feed) === "string" ? $.jitter.feeds[options.feed] : options.feed;
-      var self = {simpleTitle: options.currentFeed.simpleTitle, trackSince: options.currentFeed.trackSince};
-      
-      (function() {
-        var feedClassName = options.currentFeed.name;
-        if(options.currentFeed.requiresUsername)  { feedClassName = feedClassName.interpolate({username: options.username}); }
-        if(options.currentFeed.performSearch)     { feedClassName = feedClassName.interpolate({query: options.query.cssClassify()}); }
-        if(options.currentFeed.filteredUsers)     { feedClassName = feedClassName.interpolate({groupName: options.groupName.cssClassify()}); }
-        self.className = feedClassName;
 
-        var feedTitleName = options.currentFeed.title;
-        if(options.currentFeed.requiresUsername)  { feedTitleName = feedTitleName.interpolate({username: options.username}); }
-        if(options.currentFeed.performSearch)     { feedTitleName = feedTitleName.interpolate({query: options.query}); }
-        if(options.currentFeed.filteredUsers)     { feedTitleName = feedTitleName.interpolate({groupName: options.groupName}); }
-        self.title = feedTitleName;
-      })();
+      var self = {
+        simpleTitle: options.currentFeed.simpleTitle,
+        trackSince: options.currentFeed.trackSince,
+        className: options.currentFeed.name.interpolate({
+          username: options.username, 
+          query: options.query.cssClassify(),
+          groupName: options.groupName.cssClassify()
+        }),
+        title: options.currentFeed.title.interpolate({
+          username: options.username,
+          query: options.query,
+          groupName: options.groupName
+        })
+      };
       
       try {
         if(options.currentFeed == $.jitter.feeds.search && !options.query) { throw($.jitter.errors.invalidSearchRequest); }
@@ -91,14 +92,14 @@
         };
         
         var buildURL = function(feedItem) {
-          var url = feedItem.url.interpolate({format: format});
-          
-          if(feedItem.requiresUsername) { url = url.interpolate({username: options.username}); }
-          if(feedItem.requiresPassword) { url = url.interpolate({password: options.password}); }
-          
-          var queryString = $.param(buildRequestParams(params));
+          var url = feedItem.url.interpolate({
+              format: format,
+              username: options.username,
+              password: options.password
+            }),
+            queryString = $.param(buildRequestParams(params));
+            
           if(queryString.length) { url += "?" + queryString; }
-          
           return url;
         };
         

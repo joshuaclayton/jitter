@@ -8,20 +8,17 @@ String.prototype.cssClassify = function(sep) {
 };
 
 String.prototype.toCSSClass = function() {
-  var ele = arguments[0] || "";
-  return ele + "." + this;
+  return (arguments[0] || "") + "." + this;
 };
 
 String.prototype.interpolate = function(obj) {
-  var result = this,
-      matches = result.match(/\{\w+\}/g);
-  $.each(matches, function(i, item) {
-    var k = item.replace(/\{|\}/g, '');
-    if(obj[k]) {
-      result = result.replace(new RegExp(item), obj[k]);
-    }
-  });
-  return result;
+  return (function(result) {
+    $.each(result.match(/\{\w+\}/g), function(i, item) {
+      var k = item.replace(/\{|\}/g, '');
+      if(obj[k]) { result = result.replace(new RegExp(item), obj[k]); }
+    });
+    return result;
+  })(this);
 };
 
 String.prototype.strip = function() {

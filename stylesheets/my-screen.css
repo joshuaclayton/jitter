@@ -6,6 +6,7 @@ a {color: #333;}
 
 .sidebar { position: fixed; top: 0;}
 .header h1 { -webkit-transform: rotate(-7.5deg); text-align: center; font-weight: bold; text-transform: uppercase; color: #a33; padding: .25em 0 .375em 0; font-size: 4em; margin-bottom: 0;}
+.jitter-filters { padding-bottom: 1em; }
 .jitter-filter {display: block; padding: .5em 0; text-decoration: none; position: relative; border-bottom: 1px solid #dfdfdf; color: #777; text-transform: uppercase;}
 .jitter-filter.active {background: #fee;}
 .jitter-filter.active .show-filter {font-weight: bold;}
@@ -51,6 +52,7 @@ a {color: #333;}
 .jitterForm fieldset input[type=submit] { position: absolute; top: .75em; right: 0;}
 input.hint, textarea.hint {color: #bbb; text-transform: lowercase;}
 
+.cheatsheet {padding-left: 8px;}
 .cheatsheet dt {float: left; width: .5em; clear: both;}
 .cheatsheet dd {float: left;}
 .cheatsheet dt, .cheatsheet dd {padding: 0 0 .5em 0;}

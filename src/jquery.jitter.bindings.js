@@ -4,10 +4,9 @@
       if(!info.tweets.length) { return; }
       
       var currentSiblings = info.tweets.siblings();
-      if(currentSiblings.length) {
-        currentSiblings.removeClass('current');
-      }
-      info.tweets.filter(":not(.tweet-read)").addClass("read");
+      if(currentSiblings.length) { currentSiblings.removeClass('current'); }
+      
+      info.tweets.filter(":not(.read)").addClass("read");
       
       if(info.markAsCurrent)    { info.tweets.addClass("current"); }
       if(info.scrollToCurrent)  { $.jitter.window.tweets.current.scrollTo(); }
@@ -86,7 +85,19 @@
     
     // create filter link when jitter starts
     $(document).bind("jitter-started", function(event, info) {
-      $.jitter.window.build.filter(info.jitter).appendTo($(".jitter-filters"));
+      $.jitter.window.build.filter(info.jitter)
+        .bind("setData", function(e, key, val) {
+          if(key === "unreadCount") {
+            var $this = $(this);
+            if(!$this.find(".unreadCount").length) {
+              $("<span class='unreadCount'/>").html(val).appendTo($this);
+            } else {
+              $this.find(".unreadCount").html(val);
+            }
+            if(val === 0) { $this.find(".unreadCount").remove(); }
+          }
+        })
+        .appendTo($(".jitter-filters"));
     });
     
     // create filter link when jitter stops
@@ -135,9 +146,7 @@
     });
     
     $(document).ready(function() {
-      $.timer(60 * 1000, function(t) {
-        $.jitter.window.refreshTimestamps();
-      });
+      $.timer(60 * 1000, function(t) { $.jitter.window.refreshTimestamps(); });
     });
   };
 })(jQuery);

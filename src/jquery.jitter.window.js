@@ -1,27 +1,17 @@
 (function($) {
   var triggerTweet = function(tweets, options) {
-    var opts = $.extend({}, {tweets:tweets, markAsCurrent: true, scrollToCurrent: true}, options);
-    $.benchmark("trigger selected tweets", function() {
-      $(document).trigger("jitter-tweet-read", opts);
-    });
+    $(document).trigger("jitter-tweet-read", $.extend({}, {tweets:tweets, markAsCurrent: true, scrollToCurrent: true}, options));
   };
   
   var deleteTweet = function(tweets, options) {
-    var opts = $.extend({}, {tweets:tweets}, options);
-    $.benchmark("delete selected tweets", function() {
-      $(document).trigger("jitter-tweet-delete", opts);
-    });
+    $(document).trigger("jitter-tweet-delete", $.extend({}, {tweets:tweets}, options));
   };
   
   $.jitter.window = {
     loggable: function() { return window.console && window.console.log; },
     container: function() { return $("#content"); },
     currentJitter: function() {
-      if(arguments.length) {
-        return $(document).data("jitter-current", arguments[0]);
-      } else {
-        return $(document).data("jitter-current");
-      }
+      return arguments.length ? $(document).data("jitter-current", arguments[0]) : $(document).data("jitter-current");
     },
     currentFeed: function() {
       if($.jitter.window.currentJitter()) { return $.jitter.window.currentJitter().feed; }
@@ -48,8 +38,7 @@
           <div class="tweet clearfix">\
             <div class="meta span-5">\
               <div class="author">\
-                <div class="tweetImage span-2"/>\
-                <div class="displayName span-3 last"/>\
+                <div class="tweetImage span-2"/><div class="displayName span-3 last"/>\
               </div>\
               <div class="createdAt timestamp"/>\
               <div class="backtrack"/>\
@@ -71,7 +60,7 @@
       },
       filter: function(jitter) {
         var feed = jitter.feed;
-
+        
         return $('\
           <div class="jitter-filter">\
             <a class="twitter-rss"><img src="images/rss.png" /></a>\
@@ -79,17 +68,6 @@
             <a class="delete-filter"><img src="images/delete.png" /></a>\
           </div>')
           .addClass(feed.className)
-          .bind("setData", function(e, key, val) {
-            if(key === "unreadCount") {
-              var $this = $(this);
-              if(!$this.find(".unreadCount").length) {
-                $("<span class='unreadCount'/>").html(val).appendTo($this);
-              } else {
-                $this.find(".unreadCount").html(val);
-              }
-              if(val === 0) { $this.find(".unreadCount").remove(); }
-            }
-          })
           .find(".twitter-rss")
             .attr({href: feed.url({format: "rss"}), target: "_blank"}).end()
           .find(".show-filter")
@@ -110,20 +88,16 @@
         if(!$.jitter.window.container()) { return; }
         $.jitter.window.container().append("\
           <div class='span-8 sidebar'>\
-            <div class='header span-8 last'>\
-              <h1>Jitter</h1>\
-            </div>\
+            <div class='header span-8 last'><h1>Jitter</h1></div>\
             <div class='jitter-filters span-8 last'/>\
           </div>\
           <div id='tweets' class='span-16 prepend-8'/>\
-          <div id='tweets-archive' class='span-16 prepend-8'/>\
-        ")
-        .find(".sidebar")
-          .append("<hr class='space'/>")
-          .append($.jitter.window.build.keyboardCheatSheet()).end();
+          <div id='tweets-archive' class='span-16 prepend-8'/>")
+          .find(".sidebar")
+            .append($.jitter.window.build.keyboardCheatSheet()).end();
       },
       keyboardCheatSheet: function() {
-        var $wrapper = $("<div class='cheatsheet'><h3>Keyboard Cheatsheet</h3><dl></dl></div>");
+        var $wrapper = $("<div class='cheatsheet clearfix'><h3>Keyboard Cheatsheet</h3><dl></dl></div>");
         $.each($.jitter.keyboard.mappings, function(key, val) {
           var $dt = $("<dt/>").html(val.key || key),
               $dd = $("<dd/>").html(val.description);
@@ -147,9 +121,7 @@
         }
         
         if(opts.visible) { selector += ":visible"; }
-        
         selector += " div.tweet:not(.tweet-read)";
-        
         triggerTweet($(selector), {markAsCurrent: false, scrollToCurrent: false});
       },
       archive: function(options) {
@@ -166,7 +138,6 @@
         }
         
         if(opts.visible) { selector += ":visible"; }
-        
         selector += " div.tweet";
         $(document).trigger("jitter-tweet-archive", {tweets: $(selector)});
       },

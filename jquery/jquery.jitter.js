@@ -8,20 +8,17 @@ String.prototype.cssClassify = function(sep) {
 };
 
 String.prototype.toCSSClass = function() {
-  var ele = arguments[0] || "";
-  return ele + "." + this;
+  return (arguments[0] || "") + "." + this;
 };
 
 String.prototype.interpolate = function(obj) {
-  var result = this,
-      matches = result.match(/\{\w+\}/g);
-  $.each(matches, function(i, item) {
-    var k = item.replace(/\{|\}/g, '');
-    if(obj[k]) {
-      result = result.replace(new RegExp(item), obj[k]);
-    }
-  });
-  return result;
+  return (function(result) {
+    $.each(result.match(/\{\w+\}/g), function(i, item) {
+      var k = item.replace(/\{|\}/g, '');
+      if(obj[k]) { result = result.replace(new RegExp(item), obj[k]); }
+    });
+    return result;
+  })(this);
 };
 
 String.prototype.strip = function() {
@@ -271,22 +268,23 @@ String.prototype.strip = function() {
       title: "Search Results for '{query}'"
     },
     process: function(options) {
+      options = $.extend({}, {groupName: "", query: "", username: "", password: ""}, options);
       options.currentFeed = typeof(options.feed) === "string" ? $.jitter.feeds[options.feed] : options.feed;
-      var self = {simpleTitle: options.currentFeed.simpleTitle, trackSince: options.currentFeed.trackSince};
-      
-      (function() {
-        var feedClassName = options.currentFeed.name;
-        if(options.currentFeed.requiresUsername)  { feedClassName = feedClassName.interpolate({username: options.username}); }
-        if(options.currentFeed.performSearch)     { feedClassName = feedClassName.interpolate({query: options.query.cssClassify()}); }
-        if(options.currentFeed.filteredUsers)     { feedClassName = feedClassName.interpolate({groupName: options.groupName.cssClassify()}); }
-        self.className = feedClassName;
 
-        var feedTitleName = options.currentFeed.title;
-        if(options.currentFeed.requiresUsername)  { feedTitleName = feedTitleName.interpolate({username: options.username}); }
-        if(options.currentFeed.performSearch)     { feedTitleName = feedTitleName.interpolate({query: options.query}); }
-        if(options.currentFeed.filteredUsers)     { feedTitleName = feedTitleName.interpolate({groupName: options.groupName}); }
-        self.title = feedTitleName;
-      })();
+      var self = {
+        simpleTitle: options.currentFeed.simpleTitle,
+        trackSince: options.currentFeed.trackSince,
+        className: options.currentFeed.name.interpolate({
+          username: options.username, 
+          query: options.query.cssClassify(),
+          groupName: options.groupName.cssClassify()
+        }),
+        title: options.currentFeed.title.interpolate({
+          username: options.username,
+          query: options.query,
+          groupName: options.groupName
+        })
+      };
       
       try {
         if(options.currentFeed == $.jitter.feeds.search && !options.query) { throw($.jitter.errors.invalidSearchRequest); }
@@ -313,14 +311,14 @@ String.prototype.strip = function() {
         };
         
         var buildURL = function(feedItem) {
-          var url = feedItem.url.interpolate({format: format});
-          
-          if(feedItem.requiresUsername) { url = url.interpolate({username: options.username}); }
-          if(feedItem.requiresPassword) { url = url.interpolate({password: options.password}); }
-          
-          var queryString = $.param(buildRequestParams(params));
+          var url = feedItem.url.interpolate({
+              format: format,
+              username: options.username,
+              password: options.password
+            }),
+            queryString = $.param(buildRequestParams(params));
+            
           if(queryString.length) { url += "?" + queryString; }
-          
           return url;
         };
         
@@ -352,9 +350,7 @@ String.prototype.strip = function() {
       
       $(document).data("keyboard-bound", true);
     },
-    disable: function() {
-      $(document).data("keyboard-enabled", false);
-    },
+    disable: function() { $(document).data("keyboard-enabled", false); },
     mappings: {
       "E": {
         fn: $.jitter.window.tweets.read,
@@ -406,28 +402,18 @@ String.prototype.strip = function() {
   };
 })(jQuery);(function($) {
   var triggerTweet = function(tweets, options) {
-    var opts = $.extend({}, {tweets:tweets, markAsCurrent: true, scrollToCurrent: true}, options);
-    $.benchmark("trigger selected tweets", function() {
-      $(document).trigger("jitter-tweet-read", opts);
-    });
+    $(document).trigger("jitter-tweet-read", $.extend({}, {tweets:tweets, markAsCurrent: true, scrollToCurrent: true}, options));
   };
   
   var deleteTweet = function(tweets, options) {
-    var opts = $.extend({}, {tweets:tweets}, options);
-    $.benchmark("delete selected tweets", function() {
-      $(document).trigger("jitter-tweet-delete", opts);
-    });
+    $(document).trigger("jitter-tweet-delete", $.extend({}, {tweets:tweets}, options));
   };
   
   $.jitter.window = {
     loggable: function() { return window.console && window.console.log; },
     container: function() { return $("#content"); },
     currentJitter: function() {
-      if(arguments.length) {
-        return $(document).data("jitter-current", arguments[0]);
-      } else {
-        return $(document).data("jitter-current");
-      }
+      return arguments.length ? $(document).data("jitter-current", arguments[0]) : $(document).data("jitter-current");
     },
     currentFeed: function() {
       if($.jitter.window.currentJitter()) { return $.jitter.window.currentJitter().feed; }
@@ -454,8 +440,7 @@ String.prototype.strip = function() {
           <div class="tweet clearfix">\
             <div class="meta span-5">\
               <div class="author">\
-                <div class="tweetImage span-2"/>\
-                <div class="displayName span-3 last"/>\
+                <div class="tweetImage span-2"/><div class="displayName span-3 last"/>\
               </div>\
               <div class="createdAt timestamp"/>\
               <div class="backtrack"/>\
@@ -477,7 +462,7 @@ String.prototype.strip = function() {
       },
       filter: function(jitter) {
         var feed = jitter.feed;
-
+        
         return $('\
           <div class="jitter-filter">\
             <a class="twitter-rss"><img src="images/rss.png" /></a>\
@@ -485,17 +470,6 @@ String.prototype.strip = function() {
             <a class="delete-filter"><img src="images/delete.png" /></a>\
           </div>')
           .addClass(feed.className)
-          .bind("setData", function(e, key, val) {
-            if(key === "unreadCount") {
-              var $this = $(this);
-              if(!$this.find(".unreadCount").length) {
-                $("<span class='unreadCount'/>").html(val).appendTo($this);
-              } else {
-                $this.find(".unreadCount").html(val);
-              }
-              if(val === 0) { $this.find(".unreadCount").remove(); }
-            }
-          })
           .find(".twitter-rss")
             .attr({href: feed.url({format: "rss"}), target: "_blank"}).end()
           .find(".show-filter")
@@ -516,20 +490,16 @@ String.prototype.strip = function() {
         if(!$.jitter.window.container()) { return; }
         $.jitter.window.container().append("\
           <div class='span-8 sidebar'>\
-            <div class='header span-8 last'>\
-              <h1>Jitter</h1>\
-            </div>\
+            <div class='header span-8 last'><h1>Jitter</h1></div>\
             <div class='jitter-filters span-8 last'/>\
           </div>\
           <div id='tweets' class='span-16 prepend-8'/>\
-          <div id='tweets-archive' class='span-16 prepend-8'/>\
-        ")
-        .find(".sidebar")
-          .append("<hr class='space'/>")
-          .append($.jitter.window.build.keyboardCheatSheet()).end();
+          <div id='tweets-archive' class='span-16 prepend-8'/>")
+          .find(".sidebar")
+            .append($.jitter.window.build.keyboardCheatSheet()).end();
       },
       keyboardCheatSheet: function() {
-        var $wrapper = $("<div class='cheatsheet'><h3>Keyboard Cheatsheet</h3><dl></dl></div>");
+        var $wrapper = $("<div class='cheatsheet clearfix'><h3>Keyboard Cheatsheet</h3><dl></dl></div>");
         $.each($.jitter.keyboard.mappings, function(key, val) {
           var $dt = $("<dt/>").html(val.key || key),
               $dd = $("<dd/>").html(val.description);
@@ -553,9 +523,7 @@ String.prototype.strip = function() {
         }
         
         if(opts.visible) { selector += ":visible"; }
-        
         selector += " div.tweet:not(.tweet-read)";
-        
         triggerTweet($(selector), {markAsCurrent: false, scrollToCurrent: false});
       },
       archive: function(options) {
@@ -572,7 +540,6 @@ String.prototype.strip = function() {
         }
         
         if(opts.visible) { selector += ":visible"; }
-        
         selector += " div.tweet";
         $(document).trigger("jitter-tweet-archive", {tweets: $(selector)});
       },
@@ -603,10 +570,9 @@ String.prototype.strip = function() {
       if(!info.tweets.length) { return; }
       
       var currentSiblings = info.tweets.siblings();
-      if(currentSiblings.length) {
-        currentSiblings.removeClass('current');
-      }
-      info.tweets.filter(":not(.tweet-read)").addClass("read");
+      if(currentSiblings.length) { currentSiblings.removeClass('current'); }
+      
+      info.tweets.filter(":not(.read)").addClass("read");
       
       if(info.markAsCurrent)    { info.tweets.addClass("current"); }
       if(info.scrollToCurrent)  { $.jitter.window.tweets.current.scrollTo(); }
@@ -685,7 +651,19 @@ String.prototype.strip = function() {
     
     // create filter link when jitter starts
     $(document).bind("jitter-started", function(event, info) {
-      $.jitter.window.build.filter(info.jitter).appendTo($(".jitter-filters"));
+      $.jitter.window.build.filter(info.jitter)
+        .bind("setData", function(e, key, val) {
+          if(key === "unreadCount") {
+            var $this = $(this);
+            if(!$this.find(".unreadCount").length) {
+              $("<span class='unreadCount'/>").html(val).appendTo($this);
+            } else {
+              $this.find(".unreadCount").html(val);
+            }
+            if(val === 0) { $this.find(".unreadCount").remove(); }
+          }
+        })
+        .appendTo($(".jitter-filters"));
     });
     
     // create filter link when jitter stops
@@ -734,9 +712,7 @@ String.prototype.strip = function() {
     });
     
     $(document).ready(function() {
-      $.timer(60 * 1000, function(t) {
-        $.jitter.window.refreshTimestamps();
-      });
+      $.timer(60 * 1000, function(t) { $.jitter.window.refreshTimestamps(); });
     });
   };
 })(jQuery);
