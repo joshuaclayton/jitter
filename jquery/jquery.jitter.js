@@ -523,10 +523,13 @@ String.prototype.strip = function() {
           </div>\
           <div id='tweets' class='span-16 prepend-8'/>\
           <div id='tweets-archive' class='span-16 prepend-8'/>\
-        ");
+        ")
+        .find(".sidebar")
+          .append("<hr class='space'/>")
+          .append($.jitter.window.build.keyboardCheatSheet()).end();
       },
       keyboardCheatSheet: function() {
-        var $wrapper = $("<div class='cheatsheet'><dl></dl></div>");
+        var $wrapper = $("<div class='cheatsheet'><h3>Keyboard Cheatsheet</h3><dl></dl></div>");
         $.each($.jitter.keyboard.mappings, function(key, val) {
           var $dt = $("<dt/>").html(val.key || key),
               $dd = $("<dd/>").html(val.description);

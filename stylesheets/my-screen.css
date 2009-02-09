@@ -51,7 +51,6 @@ a {color: #333;}
 .jitterForm fieldset input[type=submit] { position: absolute; top: .75em; right: 0;}
 input.hint, textarea.hint {color: #bbb; text-transform: lowercase;}
 
-.cheatsheet {font-size: 1.75em;}
 .cheatsheet dt {float: left; width: .5em; clear: both;}
 .cheatsheet dd {float: left;}
 .cheatsheet dt, .cheatsheet dd {padding: 0 0 .5em 0;}
