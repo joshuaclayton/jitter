@@ -103,6 +103,7 @@
     
     $(document).bind("jitter-change", function(event, info) {
       if(info.jitter.feed.className) {
+        $("#tweets .feed-wrapper").find(".current").removeClass("current");
         $("#tweets .feed-wrapper").hide();
         $("#tweets").find(info.jitter.feed.className.toCSSClass("div")).show();
         $(".jitter-filter").removeClass("active");

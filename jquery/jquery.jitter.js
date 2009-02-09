@@ -574,11 +574,11 @@ String.prototype.strip = function() {
         $(document).trigger("jitter-tweet-archive", {tweets: $(selector)});
       },
       current: {
-        scrollTo:       function() { $(document).scrollTo($("#tweets div.tweet.current"), 200); },
-        setToFirst:     function() { triggerTweet($("#tweets div.tweet:visible:first")); },
-        setToNext:      function() { triggerTweet($("#tweets div.tweet.current").nextAll(":visible:first")); },
-        setToPrevious:  function() { triggerTweet($("#tweets div.tweet.current").prevAll(":visible:first")); },
-        setToLast:      function() { triggerTweet($("#tweets div.tweet:visible:last")); },
+        scrollTo:       function() { $(document).scrollTo($("#tweets .feed-wrapper:visible div.tweet.current"), 200); },
+        setToFirst:     function() { triggerTweet($("#tweets .feed-wrapper:visible div.tweet:visible:first")); },
+        setToNext:      function() { triggerTweet($("#tweets .feed-wrapper:visible div.tweet.current").nextAll(":visible:first")); },
+        setToPrevious:  function() { triggerTweet($("#tweets .feed-wrapper:visible div.tweet.current").prevAll(":visible:first")); },
+        setToLast:      function() { triggerTweet($("#tweets .feed-wrapper:visible div.tweet:visible:last")); },
         destroy:        function() { 
           var $ele = null;
           if(arguments[0]) { $ele = arguments[0].moveTo(); }
@@ -699,6 +699,7 @@ String.prototype.strip = function() {
     
     $(document).bind("jitter-change", function(event, info) {
       if(info.jitter.feed.className) {
+        $("#tweets .feed-wrapper").find(".current").removeClass("current");
         $("#tweets .feed-wrapper").hide();
         $("#tweets").find(info.jitter.feed.className.toCSSClass("div")).show();
         $(".jitter-filter").removeClass("active");
