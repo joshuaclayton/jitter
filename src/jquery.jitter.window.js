@@ -33,7 +33,7 @@
       return $.jitter.window.currentFeed() === null;
     },
     currentlyFilteredClass: function() {
-      if($.jitter.window.currentFeed()) { return "." + $.jitter.window.currentFeed().className; }
+      if($.jitter.window.currentFeed()) { return $.jitter.window.currentFeed().className.toCSSClass(); }
       return "";
     },
     refreshTimestamps: function() {
@@ -56,7 +56,7 @@
             </div>\
             <div class="tweetBody span-11 last"/>\
           </div>')
-          .addClass(feed.className).addClass("author-" + $.twitter.username(tweet)).attr("id", $.twitter.domID(tweet))
+          .attr("id", $.twitter.domID(tweet))
           .data("jitter", jitter)
           .click(function() {
             $(document).trigger("jitter-tweet-read", {tweets: $(this), markAsCurrent: true, scrollToCurrent: true});
@@ -98,6 +98,12 @@
             .click(function() {
               $.jitter.window.currentJitter(jitter);
               return false;
+            }).end()
+          .find(".delete-filter")
+            .attr({href: "#"})
+            .click(function() {
+              jitter.stop();
+              return false;
             }).end();
       },
       initialPage: function() {
@@ -125,48 +131,7 @@
     },
     tweets: {
       read: function(options) {
-        // TODO: CLEAN UP
-        var $allTweets = $('#tweets div.tweet'),
-          allTweetsLength = $allTweets.length,
-          filteredTweets = [],
-          tweetFilter = null,
-          $selector,
-          opts = $.extend({}, {visible: true}, options);
-        
-        $.benchmark("calculating selector", function() {
-          if(opts.feed) {
-            if(typeof(opts.feed) === "function") { opts.feed = opts.feed(); }
-            if(typeof(opts.feed) === "string") {
-              tweetFilter = opts.feed.slice(1);
-            } else if(opts.feed.className) {
-              tweetFilter = opts.feed.className;
-            }
-          }
-        
-          if (opts.visible) {
-            for (var i=0; i < allTweetsLength; i++) {
-              if ( (tweetFilter === null || $allTweets[i].className.indexOf(tweetFilter) !== -1) 
-              && $allTweets[i].style.display !== 'none') {
-                filteredTweets.push($allTweets[i]);
-              }
-            }
-          } else {
-            if (filteredTweets === null) {
-              filteredTweets = $allTweets.get();
-            }
-            for (var i=0; i < allTweetsLength; i++) {
-              if ($allTweets[i].className.indexOf(tweetFilter) !== -1) {
-                filteredTweets.push($allTweets[i]);
-              }
-            }
-          } 
-          $selector = $(filteredTweets);
-        });
-        
-        triggerTweet($selector, {markAsCurrent: false, scrollToCurrent: false});
-      },
-      archive: function(options) {
-        var selector = "#tweets div.tweet",
+        var selector = "#tweets .feed-wrapper",
             opts = $.extend({}, {visible: true}, options);
         
         if(opts.feed) {
@@ -174,11 +139,32 @@
           if(typeof(opts.feed) === "string") {
             selector += opts.feed;
           } else if(opts.feed.className) {
-            selector += "." + opts.feed.className;
+            selector += opts.feed.className.toCSSClass();
           }
         }
         
         if(opts.visible) { selector += ":visible"; }
+        
+        selector += " div.tweet:not(.tweet-read)";
+        
+        triggerTweet($(selector), {markAsCurrent: false, scrollToCurrent: false});
+      },
+      archive: function(options) {
+        var selector = "#tweets .feed-wrapper",
+            opts = $.extend({}, {visible: true}, options);
+        
+        if(opts.feed) {
+          if(typeof(opts.feed) === "function") { opts.feed = opts.feed(); }
+          if(typeof(opts.feed) === "string") {
+            selector += opts.feed;
+          } else if(opts.feed.className) {
+            selector += opts.feed.className.toCSSClass();
+          }
+        }
+        
+        if(opts.visible) { selector += ":visible"; }
+        
+        selector += " div.tweet";
         $(document).trigger("jitter-tweet-archive", {tweets: $(selector)});
       },
       current: {

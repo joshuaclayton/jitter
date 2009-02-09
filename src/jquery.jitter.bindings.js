@@ -1,6 +1,8 @@
 (function($) {
   $.jitter.bindings = function() {
     $(document).bind("jitter-tweet-read", function(event, info) {
+      if(!info.tweets.length) { return; }
+      
       var currentSiblings = info.tweets.siblings();
       if(currentSiblings.length) {
         currentSiblings.removeClass('current');
@@ -12,14 +14,13 @@
     });
     
     $(document).bind("jitter-tweet-archive", function(event, info) {
+      if(!info.tweets.length) { return; }
       $(document).trigger("jitter-tweet-read", {tweets: info.tweets});
-      info.tweets.appendTo("#tweets-archive");
+      info.tweets.appendTo($("#tweets-archive").find($(info.tweets[0]).data("jitter").feed.className.toCSSClass("div")));
     });
     
     $(document).bind("jitter-tweet-delete", function(event, info) {
-      $.benchmark("deleting tweet(s)", function() {
-        info.tweets.remove();
-      });
+      info.tweets.remove();
     });
     
     $(document).bind("jitter-success", function(event, info) {
@@ -33,7 +34,22 @@
         $.jitter.window.build.tweet(tweet, info.jitter).appendTo($wrapper);
       });
       
-      var $tweetElements = $wrapper.children().hide()[$("#tweets div.tweet").filter("." + info.jitter.feed.className).length ? "prependTo" : "appendTo"]($target.find("#tweets"));
+      if(!$target.find("#tweets").find(info.jitter.feed.className.toCSSClass("div")).length) {
+        var $feed_wrapper = $("<div/>")
+          .addClass(info.jitter.feed.className)
+          .addClass("feed-wrapper");
+        
+        if($.jitter.window.currentlyFilteredToFeed(info.jitter.feed)) {
+          $feed_wrapper.hide();
+        }
+        
+        $feed_wrapper
+          .appendTo($("#tweets"))
+          .clone()
+          .appendTo($("#tweets-archive"));
+      }
+      
+      var $tweetElements = $wrapper.children()[$("#tweets").find(info.jitter.feed.className.toCSSClass("div")).find(".tweet").length ? "prependTo" : "appendTo"]($target.find("#tweets").find(info.jitter.feed.className.toCSSClass("div")));
       
       if($.jitter.window.currentlyFilteredToFeed(info.jitter.feed) || $.jitter.window.currentlyFilteredToAll()) {
         $tweetElements.fadeIn("slow");
@@ -42,7 +58,7 @@
     });
     
     $(document).bind("jitter-success", function(event, info) {
-      if(!info.data.length > 0) { return; }
+      if(!info.data.length) { return; }
       $(document).data("jitter-unread", ($(document).data("jitter-unread") || 0) + info.data.length);
       $(document).data("jitter-unread-" + info.jitter.feed.className, ($(document).data("jitter-unread-" + info.jitter.feed.className) || 0) + info.data.length);
     });
@@ -73,12 +89,24 @@
       $.jitter.window.build.filter(info.jitter).appendTo($(".jitter-filters"));
     });
     
+    // create filter link when jitter stops
+    $(document).bind("jitter-stopped", function(event, info) {
+      $("#tweets").find(info.jitter.feed.className.toCSSClass("div")).remove();
+      $("#tweets-archive").find(info.jitter.feed.className.toCSSClass("div")).remove();
+      $(info.jitter.feed.className.toCSSClass(".jitter-filter")).remove();
+      
+      var unreadCountHandle = "jitter-unread-" + info.jitter.feed.className,
+          unreadCount = $(document).data(unreadCountHandle);
+      $(document).data(unreadCountHandle, 0);
+      $(document).data("jitter-unread", $(document).data("jitter-unread") - unreadCount);
+    });
+    
     $(document).bind("jitter-change", function(event, info) {
       if(info.jitter.feed.className) {
-        $("#tweets div.tweet").hide();
-        $("#tweets div.tweet").filter("." + info.jitter.feed.className).show();
+        $("#tweets .feed-wrapper").hide();
+        $("#tweets").find(info.jitter.feed.className.toCSSClass("div")).show();
         $(".jitter-filter").removeClass("active");
-        $(".jitter-filter").filter("." + info.jitter.feed.className).addClass("active");
+        $(".jitter-filter").filter(info.jitter.feed.className.toCSSClass()).addClass("active");
       } else {
         $("#tweets div.tweet:hidden").show();
       }
@@ -96,8 +124,8 @@
         var matches = key.match(/^jitter-unread\-(.+)$/);
         if(matches){
           var className = matches[1];
-          if($(".jitter-filter." + className)) {
-            $(".jitter-filter." + className).data("unreadCount", val);
+          if($(className.toCSSClass(".jitter-filter"))) {
+            $(className.toCSSClass(".jitter-filter")).data("unreadCount", val);
           }
         }
       }

@@ -27,19 +27,14 @@
     <![endif]-->
     <script>
       $(document).ready(function() {
-        // $.timer(1000, function(t) { 
-        //   if(window.console && window.console.log) {
-            $.jitter.bindings();
-            $.jitter.window.build.initialPage();
-            $.jitter.window.currentJitter($.jitter().start());
-            $.jitter({query: "blueprint css"}).start();
-            $.jitter({query: "ruby on rails"}).start();
-            $.jitter({query: "git"}).start();
-            $.jitter({feed: "groupTimeline", users: ["jstew1974", "jackbaty", "timkelty", "kswedberg"], groupName: "Fusionary Media"}).start();
-            $.jitter.keyboard.enable();
-            // t.stop();
-        //   }
-        // });
+        $.jitter.bindings();
+        $.jitter.window.build.initialPage();
+        $.jitter.window.currentJitter($.jitter().start());
+        $.jitter({query: "blueprint css"}).start();
+        $.jitter({query: "ruby on rails"}).start();
+        $.jitter({query: "git"}).start();
+        $.jitter({feed: "groupTimeline", users: ["jstew1974", "jackbaty", "timkelty", "kswedberg"], groupName: "Fusionary Media"}).start();
+        $.jitter.keyboard.enable();
       });
     </script>
   </head>

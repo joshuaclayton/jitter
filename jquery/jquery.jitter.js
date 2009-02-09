@@ -7,6 +7,11 @@ String.prototype.cssClassify = function(sep) {
     .toLowerCase();
 };
 
+String.prototype.toCSSClass = function() {
+  var ele = arguments[0] || "";
+  return ele + "." + this;
+};
+
 String.prototype.interpolate = function(obj) {
   var result = this,
       matches = result.match(/\{\w+\}/g);
@@ -434,7 +439,7 @@ String.prototype.strip = function() {
       return $.jitter.window.currentFeed() === null;
     },
     currentlyFilteredClass: function() {
-      if($.jitter.window.currentFeed()) { return "." + $.jitter.window.currentFeed().className; }
+      if($.jitter.window.currentFeed()) { return $.jitter.window.currentFeed().className.toCSSClass(); }
       return "";
     },
     refreshTimestamps: function() {
@@ -457,7 +462,7 @@ String.prototype.strip = function() {
             </div>\
             <div class="tweetBody span-11 last"/>\
           </div>')
-          .addClass(feed.className).addClass("author-" + $.twitter.username(tweet)).attr("id", $.twitter.domID(tweet))
+          .attr("id", $.twitter.domID(tweet))
           .data("jitter", jitter)
           .click(function() {
             $(document).trigger("jitter-tweet-read", {tweets: $(this), markAsCurrent: true, scrollToCurrent: true});
@@ -499,6 +504,12 @@ String.prototype.strip = function() {
             .click(function() {
               $.jitter.window.currentJitter(jitter);
               return false;
+            }).end()
+          .find(".delete-filter")
+            .attr({href: "#"})
+            .click(function() {
+              jitter.stop();
+              return false;
             }).end();
       },
       initialPage: function() {
@@ -526,48 +537,7 @@ String.prototype.strip = function() {
     },
     tweets: {
       read: function(options) {
-        // TODO: CLEAN UP
-        var $allTweets = $('#tweets div.tweet'),
-          allTweetsLength = $allTweets.length,
-          filteredTweets = [],
-          tweetFilter = null,
-          $selector,
-          opts = $.extend({}, {visible: true}, options);
-        
-        $.benchmark("calculating selector", function() {
-          if(opts.feed) {
-            if(typeof(opts.feed) === "function") { opts.feed = opts.feed(); }
-            if(typeof(opts.feed) === "string") {
-              tweetFilter = opts.feed.slice(1);
-            } else if(opts.feed.className) {
-              tweetFilter = opts.feed.className;
-            }
-          }
-        
-          if (opts.visible) {
-            for (var i=0; i < allTweetsLength; i++) {
-              if ( (tweetFilter === null || $allTweets[i].className.indexOf(tweetFilter) !== -1) 
-              && $allTweets[i].style.display !== 'none') {
-                filteredTweets.push($allTweets[i]);
-              }
-            }
-          } else {
-            if (filteredTweets === null) {
-              filteredTweets = $allTweets.get();
-            }
-            for (var i=0; i < allTweetsLength; i++) {
-              if ($allTweets[i].className.indexOf(tweetFilter) !== -1) {
-                filteredTweets.push($allTweets[i]);
-              }
-            }
-          } 
-          $selector = $(filteredTweets);
-        });
-        
-        triggerTweet($selector, {markAsCurrent: false, scrollToCurrent: false});
-      },
-      archive: function(options) {
-        var selector = "#tweets div.tweet",
+        var selector = "#tweets .feed-wrapper",
             opts = $.extend({}, {visible: true}, options);
         
         if(opts.feed) {
@@ -575,11 +545,32 @@ String.prototype.strip = function() {
           if(typeof(opts.feed) === "string") {
             selector += opts.feed;
           } else if(opts.feed.className) {
-            selector += "." + opts.feed.className;
+            selector += opts.feed.className.toCSSClass();
           }
         }
         
         if(opts.visible) { selector += ":visible"; }
+        
+        selector += " div.tweet:not(.tweet-read)";
+        
+        triggerTweet($(selector), {markAsCurrent: false, scrollToCurrent: false});
+      },
+      archive: function(options) {
+        var selector = "#tweets .feed-wrapper",
+            opts = $.extend({}, {visible: true}, options);
+        
+        if(opts.feed) {
+          if(typeof(opts.feed) === "function") { opts.feed = opts.feed(); }
+          if(typeof(opts.feed) === "string") {
+            selector += opts.feed;
+          } else if(opts.feed.className) {
+            selector += opts.feed.className.toCSSClass();
+          }
+        }
+        
+        if(opts.visible) { selector += ":visible"; }
+        
+        selector += " div.tweet";
         $(document).trigger("jitter-tweet-archive", {tweets: $(selector)});
       },
       current: {
@@ -606,6 +597,8 @@ String.prototype.strip = function() {
 })(jQuery);(function($) {
   $.jitter.bindings = function() {
     $(document).bind("jitter-tweet-read", function(event, info) {
+      if(!info.tweets.length) { return; }
+      
       var currentSiblings = info.tweets.siblings();
       if(currentSiblings.length) {
         currentSiblings.removeClass('current');
@@ -617,14 +610,13 @@ String.prototype.strip = function() {
     });
     
     $(document).bind("jitter-tweet-archive", function(event, info) {
+      if(!info.tweets.length) { return; }
       $(document).trigger("jitter-tweet-read", {tweets: info.tweets});
-      info.tweets.appendTo("#tweets-archive");
+      info.tweets.appendTo($("#tweets-archive").find($(info.tweets[0]).data("jitter").feed.className.toCSSClass("div")));
     });
     
     $(document).bind("jitter-tweet-delete", function(event, info) {
-      $.benchmark("deleting tweet(s)", function() {
-        info.tweets.remove();
-      });
+      info.tweets.remove();
     });
     
     $(document).bind("jitter-success", function(event, info) {
@@ -638,7 +630,22 @@ String.prototype.strip = function() {
         $.jitter.window.build.tweet(tweet, info.jitter).appendTo($wrapper);
       });
       
-      var $tweetElements = $wrapper.children().hide()[$("#tweets div.tweet").filter("." + info.jitter.feed.className).length ? "prependTo" : "appendTo"]($target.find("#tweets"));
+      if(!$target.find("#tweets").find(info.jitter.feed.className.toCSSClass("div")).length) {
+        var $feed_wrapper = $("<div/>")
+          .addClass(info.jitter.feed.className)
+          .addClass("feed-wrapper");
+        
+        if($.jitter.window.currentlyFilteredToFeed(info.jitter.feed)) {
+          $feed_wrapper.hide();
+        }
+        
+        $feed_wrapper
+          .appendTo($("#tweets"))
+          .clone()
+          .appendTo($("#tweets-archive"));
+      }
+      
+      var $tweetElements = $wrapper.children()[$("#tweets").find(info.jitter.feed.className.toCSSClass("div")).find(".tweet").length ? "prependTo" : "appendTo"]($target.find("#tweets").find(info.jitter.feed.className.toCSSClass("div")));
       
       if($.jitter.window.currentlyFilteredToFeed(info.jitter.feed) || $.jitter.window.currentlyFilteredToAll()) {
         $tweetElements.fadeIn("slow");
@@ -647,7 +654,7 @@ String.prototype.strip = function() {
     });
     
     $(document).bind("jitter-success", function(event, info) {
-      if(!info.data.length > 0) { return; }
+      if(!info.data.length) { return; }
       $(document).data("jitter-unread", ($(document).data("jitter-unread") || 0) + info.data.length);
       $(document).data("jitter-unread-" + info.jitter.feed.className, ($(document).data("jitter-unread-" + info.jitter.feed.className) || 0) + info.data.length);
     });
@@ -678,12 +685,24 @@ String.prototype.strip = function() {
       $.jitter.window.build.filter(info.jitter).appendTo($(".jitter-filters"));
     });
     
+    // create filter link when jitter stops
+    $(document).bind("jitter-stopped", function(event, info) {
+      $("#tweets").find(info.jitter.feed.className.toCSSClass("div")).remove();
+      $("#tweets-archive").find(info.jitter.feed.className.toCSSClass("div")).remove();
+      $(info.jitter.feed.className.toCSSClass(".jitter-filter")).remove();
+      
+      var unreadCountHandle = "jitter-unread-" + info.jitter.feed.className,
+          unreadCount = $(document).data(unreadCountHandle);
+      $(document).data(unreadCountHandle, 0);
+      $(document).data("jitter-unread", $(document).data("jitter-unread") - unreadCount);
+    });
+    
     $(document).bind("jitter-change", function(event, info) {
       if(info.jitter.feed.className) {
-        $("#tweets div.tweet").hide();
-        $("#tweets div.tweet").filter("." + info.jitter.feed.className).show();
+        $("#tweets .feed-wrapper").hide();
+        $("#tweets").find(info.jitter.feed.className.toCSSClass("div")).show();
         $(".jitter-filter").removeClass("active");
-        $(".jitter-filter").filter("." + info.jitter.feed.className).addClass("active");
+        $(".jitter-filter").filter(info.jitter.feed.className.toCSSClass()).addClass("active");
       } else {
         $("#tweets div.tweet:hidden").show();
       }
@@ -701,8 +720,8 @@ String.prototype.strip = function() {
         var matches = key.match(/^jitter-unread\-(.+)$/);
         if(matches){
           var className = matches[1];
-          if($(".jitter-filter." + className)) {
-            $(".jitter-filter." + className).data("unreadCount", val);
+          if($(className.toCSSClass(".jitter-filter"))) {
+            $(className.toCSSClass(".jitter-filter")).data("unreadCount", val);
           }
         }
       }

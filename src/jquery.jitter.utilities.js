@@ -7,6 +7,11 @@ String.prototype.cssClassify = function(sep) {
     .toLowerCase();
 };
 
+String.prototype.toCSSClass = function() {
+  var ele = arguments[0] || "";
+  return ele + "." + this;
+};
+
 String.prototype.interpolate = function(obj) {
   var result = this,
       matches = result.match(/\{\w+\}/g);
