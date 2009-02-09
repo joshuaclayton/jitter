@@ -631,15 +631,15 @@ String.prototype.strip = function() {
       });
       
       if(!$target.find("#tweets").find(info.jitter.feed.className.toCSSClass("div")).length) {
-        var $feed_wrapper = $("<div/>")
+        var $feedWrapper = $("<div/>")
           .addClass(info.jitter.feed.className)
           .addClass("feed-wrapper");
         
-        if($.jitter.window.currentlyFilteredToFeed(info.jitter.feed)) {
-          $feed_wrapper.hide();
+        if(!$.jitter.window.currentlyFilteredToFeed(info.jitter.feed)) {
+          $feedWrapper.hide();
         }
         
-        $feed_wrapper
+        $feedWrapper
           .appendTo($("#tweets"))
           .clone()
           .appendTo($("#tweets-archive"));
