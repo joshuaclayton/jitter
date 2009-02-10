@@ -1,4 +1,8 @@
+#tweets {position: relative; overflow: hidden;}
 #tweets-archive { display: none; }
+.feed-wrapper {position: relative;}
+.sidebar {position: relative; z-index: 2;}
+
 .container noscript h1 {text-align: center; font-weight: bold; text-transform: uppercase; color: #a33; padding: 1em 0 .5em; font-size: 3.25em;}
 .container noscript p { font-size: 2em; color: #666; font-weight: bold; text-align: justify; letter-spacing: .035em;}
 body {color: #666;}

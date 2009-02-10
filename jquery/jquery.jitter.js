@@ -629,11 +629,10 @@ String.prototype.strip = function() {
       if(!$target.find("#tweets").find(info.jitter.feed.className.toCSSClass("div")).length) {
         var $feedWrapper = $("<div/>")
           .addClass(info.jitter.feed.className)
-          .addClass("feed-wrapper");
+          .addClass("feed-wrapper")
+          .addClass("span-16 last");
         
-        if(!$.jitter.window.currentlyFilteredToFeed(info.jitter.feed)) {
-          $feedWrapper.hide();
-        }
+        if(!$.jitter.window.currentlyFilteredToFeed(info.jitter.feed)) { $feedWrapper.hide(); }
         
         $feedWrapper
           .appendTo($("#tweets"))
@@ -696,8 +695,12 @@ String.prototype.strip = function() {
     
     $(document).bind("jitter-change", function(event, info) {
       if(info.jitter.feed.className) {
-        $("#tweets .feed-wrapper").hide().find(".current").removeClass("current");
-        $("#tweets").find(info.jitter.feed.className.toCSSClass("div")).show();
+        $("#tweets .feed-wrapper:visible")
+          .fadeOut("fast", function() { $(this).find(".current").removeClass("current"); });
+        $("#tweets")
+          .find(info.jitter.feed.className.toCSSClass("div"))
+            .css({"left": $("#tweets").width()}).show()
+            .animate({"left": 0});
         $(".jitter-filter").removeClass("active").filter(info.jitter.feed.className.toCSSClass()).addClass("active");
       } else {
         $("#tweets .feed-wrapper:hidden").show();
