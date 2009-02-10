@@ -71,30 +71,6 @@
 
 (function($) {
   $.fn.outerHTML = function() { return $("<div/>").append(this.eq(0).clone()).html(); };
-  
-  $.fn.defaultValueActsAsHint = function() {
-    var handleItem = function(idx, item) {
-      var $item = $(item);
-      $item
-        .data("defaultValue", $item.val())
-        .addClass("hint")
-        .focus(function() {
-          if($(this).data("defaultValue") != $(this).val()) { return; }
-          $(this).removeClass("hint").val("");
-        }).blur(function() {
-          if($(this).val().strip() != "") { return; }
-          $(this).addClass("hint").val($(this).data("defaultValue"));
-        });
-    };
-    
-    var $inputs = $("<div/>").append(this).find("input");
-    var $textareas = $("<div/>").append(this).find("textarea");
-    
-    $.each($inputs, handleItem);
-    $.each($textareas, handleItem);
-    
-    return this;
-  };
 })(jQuery);
 
 (function($) {
@@ -254,7 +230,7 @@
         var args = arguments[0] || {},
             jitter = args.jitter || {},
             format = args.format || "json",
-            params = args.params || {};
+            params = args.params || {lang: "en"};
         
         var buildRequestParams = function(addlParams) {
           var requestParams = {};
@@ -434,17 +410,7 @@
         setToNext:      function() { triggerTweet($("#tweets .feed-wrapper:visible div.tweet.current").nextAll(":visible:first")); },
         setToPrevious:  function() { triggerTweet($("#tweets .feed-wrapper:visible div.tweet.current").prevAll(":visible:first")); },
         setToLast:      function() { triggerTweet($("#tweets .feed-wrapper:visible div.tweet:visible:last")); },
-        destroy:        function() { 
-          var $ele = null;
-          if(arguments[0]) { $ele = arguments[0].moveTo(); }
-          deleteTweet($("div.tweet.current"));
-          if($ele) { triggerTweet($ele); }
-        },
-        openLinks: function() { 
-          $("div.tweet.current div.tweetBody a").each(function(idx, anchor) {
-            window.open($(anchor).attr("href"), "_blank");
-          });
-        },
+        openLinks: function() { $("div.tweet.current div.tweetBody a").each(function(idx, anchor) { window.open($(anchor).attr("href"), "_blank"); }); },
         openAuthorTwitterLink: function() { window.open($("div.tweet.current div.author div.displayName a").attr("href"), "_blank"); }
       }
     }
@@ -482,14 +448,6 @@
         fn: $.jitter.window.tweets.archive,
         args: [{visible: true, feed: $.jitter.window.currentFeed}],
         description: "Archive all visible tweets"
-      },
-      "X": {
-        fn: $.jitter.window.tweets.current.destroy,
-        args: [{moveTo: function() { 
-          var $next = $("div.tweet.current").nextAll(":visible:first"),
-              $prev = $("div.tweet.current").prevAll(":visible:first");
-          return ($next.length ? $next : $prev); }}],
-        description: "Remove current tweet"
       },
       "O": {
         fn: $.jitter.window.tweets.current.openAuthorTwitterLink,
@@ -623,8 +581,8 @@
           .fadeOut("fast", function() { $(this).find(".current").removeClass("current"); });
         $("#tweets")
           .find(info.jitter.feed.className.toCSSClass("div"))
-            .css({"left": $("#tweets").width()}).show()
-            .animate({"left": 0});
+            .css({"left": "700px"}).show()
+            .animate({"left": 0}, 800, "easeOutBounce");
         $(".jitter-filter").removeClass("active").filter(info.jitter.feed.className.toCSSClass()).addClass("active");
       } else {
         $("#tweets .feed-wrapper:hidden").show();

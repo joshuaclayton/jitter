@@ -99,8 +99,8 @@
           .fadeOut("fast", function() { $(this).find(".current").removeClass("current"); });
         $("#tweets")
           .find(info.jitter.feed.className.toCSSClass("div"))
-            .css({"left": $("#tweets").width()}).show()
-            .animate({"left": 0});
+            .css({"left": "700px"}).show()
+            .animate({"left": 0}, 800, "easeOutBounce");
         $(".jitter-filter").removeClass("active").filter(info.jitter.feed.className.toCSSClass()).addClass("active");
       } else {
         $("#tweets .feed-wrapper:hidden").show();

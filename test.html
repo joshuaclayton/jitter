@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Jitter!</title>
-    
+    <title>Jitter</title>
     <script type="text/javascript" src="jquery/jquery-1.3.min.js"></script>
+    <script type="text/javascript" src="jquery/jquery.easing.js"></script>
     <script type="text/javascript" src="jquery/jquery.timer.js"></script>
     <script type="text/javascript" src="jquery/jquery.scrollTo.min.js"></script>
     <script type="text/javascript" src="src/jquery.jitter.utilities.js"></script>
@@ -32,7 +32,6 @@
         $.jitter.window.currentJitter($.jitter().start());
         $.jitter({query: "blueprint css"}).start();
         $.jitter({query: "ruby on rails"}).start();
-        $.jitter({query: "git"}).start();
         $.jitter({feed: "groupTimeline", users: ["jstew1974", "jackbaty", "timkelty", "kswedberg"], groupName: "Fusionary Media"}).start();
         $.jitter.keyboard.enable();
       });

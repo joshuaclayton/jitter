@@ -80,7 +80,7 @@
         var args = arguments[0] || {},
             jitter = args.jitter || {},
             format = args.format || "json",
-            params = args.params || {};
+            params = args.params || {lang: "en"};
         
         var buildRequestParams = function(addlParams) {
           var requestParams = {};

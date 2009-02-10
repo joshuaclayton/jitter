@@ -148,17 +148,7 @@
         setToNext:      function() { triggerTweet($("#tweets .feed-wrapper:visible div.tweet.current").nextAll(":visible:first")); },
         setToPrevious:  function() { triggerTweet($("#tweets .feed-wrapper:visible div.tweet.current").prevAll(":visible:first")); },
         setToLast:      function() { triggerTweet($("#tweets .feed-wrapper:visible div.tweet:visible:last")); },
-        destroy:        function() { 
-          var $ele = null;
-          if(arguments[0]) { $ele = arguments[0].moveTo(); }
-          deleteTweet($("div.tweet.current"));
-          if($ele) { triggerTweet($ele); }
-        },
-        openLinks: function() { 
-          $("div.tweet.current div.tweetBody a").each(function(idx, anchor) {
-            window.open($(anchor).attr("href"), "_blank");
-          });
-        },
+        openLinks: function() { $("div.tweet.current div.tweetBody a").each(function(idx, anchor) { window.open($(anchor).attr("href"), "_blank"); }); },
         openAuthorTwitterLink: function() { window.open($("div.tweet.current div.author div.displayName a").attr("href"), "_blank"); }
       }
     }
