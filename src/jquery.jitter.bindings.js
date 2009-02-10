@@ -18,9 +18,7 @@
       info.tweets.appendTo($("#tweets-archive").find($(info.tweets[0]).data("jitter").feed.className.toCSSClass("div")));
     });
     
-    $(document).bind("jitter-tweet-delete", function(event, info) {
-      info.tweets.remove();
-    });
+    $(document).bind("jitter-tweet-delete", function(event, info) { info.tweets.remove(); });
     
     $(document).bind("jitter-success", function(event, info) {
       var tweets = info.data,
@@ -36,15 +34,10 @@
       if(!$target.find("#tweets").find(info.jitter.feed.className.toCSSClass("div")).length) {
         var $feedWrapper = $("<div/>")
           .addClass(info.jitter.feed.className)
-          .addClass("feed-wrapper")
-          .addClass("span-16 last");
+          .addClass("feed-wrapper span-16 last");
         
         if(!$.jitter.window.currentlyFilteredToFeed(info.jitter.feed)) { $feedWrapper.hide(); }
-        
-        $feedWrapper
-          .appendTo($("#tweets"))
-          .clone()
-          .appendTo($("#tweets-archive"));
+        $feedWrapper.appendTo($("#tweets")).clone().appendTo($("#tweets-archive"));
       }
       
       var $tweetElements = $wrapper.children()[$("#tweets").find(info.jitter.feed.className.toCSSClass("div")).find(".tweet").length ? "prependTo" : "appendTo"]($target.find("#tweets").find(info.jitter.feed.className.toCSSClass("div")));

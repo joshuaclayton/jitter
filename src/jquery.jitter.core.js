@@ -22,7 +22,6 @@
     self.start = function() {
       $(document).trigger("jitter-started", {jitter: self});
       updateTweets();
-      
       if(!self.timer) {
         self.timer = $.timer(1000 * options.refreshRate, function(t) { updateTweets(); });
         this.stop = function() { $(document).trigger("jitter-stopped", {jitter: self}); self.timer.stop(); return self; };

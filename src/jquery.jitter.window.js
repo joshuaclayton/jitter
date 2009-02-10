@@ -1,11 +1,6 @@
 (function($) {
-  var triggerTweet = function(tweets, options) {
-    $(document).trigger("jitter-tweet-read", $.extend({}, {tweets:tweets, markAsCurrent: true, scrollToCurrent: true}, options));
-  };
-  
-  var deleteTweet = function(tweets, options) {
-    $(document).trigger("jitter-tweet-delete", $.extend({}, {tweets:tweets}, options));
-  };
+  var triggerTweet = function(tweets, options) { $(document).trigger("jitter-tweet-read", $.extend({}, {tweets:tweets, markAsCurrent: true, scrollToCurrent: true}, options)); };
+  var deleteTweet = function(tweets, options) { $(document).trigger("jitter-tweet-delete", $.extend({}, {tweets:tweets}, options)); };
   
   var buildReadSelector = function(options, args) {
     var selector = "#tweets .feed-wrapper",
@@ -30,15 +25,9 @@
     currentJitter: function() {
       return arguments.length ? $(document).data("jitter-current", arguments[0]) : $(document).data("jitter-current");
     },
-    currentFeed: function() {
-      if($.jitter.window.currentJitter()) { return $.jitter.window.currentJitter().feed; }
-    },
-    currentlyFilteredToFeed: function(feed) {
-      return $.jitter.window.currentFeed() === feed;
-    },
-    currentlyFilteredToAll: function() {
-      return $.jitter.window.currentFeed() === null;
-    },
+    currentFeed: function() { if($.jitter.window.currentJitter()) { return $.jitter.window.currentJitter().feed; } },
+    currentlyFilteredToFeed: function(feed) { return $.jitter.window.currentFeed() === feed; },
+    currentlyFilteredToAll: function() { return $.jitter.window.currentFeed() === null; },
     currentlyFilteredClass: function() {
       if($.jitter.window.currentFeed()) { return $.jitter.window.currentFeed().className.toCSSClass(); }
       return "";
@@ -52,23 +41,15 @@
       var filter = arguments[0] || null,
           options = $.extend({}, {onlyFilter: false}, (arguments[1] || {}));
       
-      var self = {
+      return {
         increase: function(count) {
-          if(!options.onlyFilter === true) {
-            $(document).data("jitter-unread", ($(document).data("jitter-unread") || 0) + count);
-          }
-          if(filter) {
-            $(document).data("jitter-unread-" + filter, ($(document).data("jitter-unread-" + filter) || 0) + count);
-          }
+          if(!options.onlyFilter === true) { $(document).data("jitter-unread", ($(document).data("jitter-unread") || 0) + count); }
+          if(filter) { $(document).data("jitter-unread-" + filter, ($(document).data("jitter-unread-" + filter) || 0) + count); }
           return count;
         },
         decrease: function(count) {
-          if(!options.onlyFilter === true) {
-            $(document).data("jitter-unread", $(document).data("jitter-unread") - count);
-          }
-          if(filter) {
-            $(document).data("jitter-unread-" + filter, $(document).data("jitter-unread-" + filter) - count);
-          }
+          if(!options.onlyFilter === true) { $(document).data("jitter-unread", $(document).data("jitter-unread") - count); }
+          if(filter) { $(document).data("jitter-unread-" + filter, $(document).data("jitter-unread-" + filter) - count); }
           return count;
         },
         empty: function() {
@@ -80,12 +61,8 @@
           }
           return 0;
         },
-        count: function() {
-          return filter ? $(document).data("jitter-unread-" + filter) : $(document).data("jitter-unread");
-        }
+        count: function() { return filter ? $(document).data("jitter-unread-" + filter) : $(document).data("jitter-unread"); }
       };
-      
-      return self;
     },
     build: {
       tweet: function(tweet, jitter) {
@@ -129,16 +106,10 @@
           .find(".show-filter")
             .html(feed.title)
             .attr({href: "#"})
-            .click(function() {
-              $.jitter.window.currentJitter(jitter);
-              return false;
-            }).end()
+            .click(function() { $.jitter.window.currentJitter(jitter); return false; }).end()
           .find(".delete-filter")
             .attr({href: "#"})
-            .click(function() {
-              jitter.stop();
-              return false;
-            }).end();
+            .click(function() { jitter.stop(); return false; }).end();
       },
       initialPage: function() {
         if(!$.jitter.window.container()) { return; }

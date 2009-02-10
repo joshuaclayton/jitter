@@ -1,29 +1,25 @@
-String.prototype.cssClassify = function(sep) {
-  sep = sep || "-";
-  return this.replace(/[^\x00-\x7F]+/, '')
-    .replace(/[^\w\-_\+]+/g, sep)
-    .replace(new RegExp(sep + "+"), sep)
-    .replace(new RegExp("^" + sep + "|" + sep + "$"), '')
-    .toLowerCase();
-};
-
-String.prototype.toCSSClass = function() {
-  return (arguments[0] || "") + "." + this;
-};
-
-String.prototype.interpolate = function(obj) {
-  return (function(result) {
-    $.each(result.match(/\{\w+\}/g), function(i, item) {
-      var k = item.replace(/\{|\}/g, '');
-      if(obj[k]) { result = result.replace(new RegExp(item), obj[k]); }
-    });
-    return result;
-  })(this);
-};
-
-String.prototype.strip = function() {
-  return this.replace(/^ +| +$/g, '');
-};
+(function($) {
+  $.extend(String.prototype, {
+    cssClassify: function(sep) {
+      sep = sep || "-";
+      return this.replace(/[^\x00-\x7F]+/, '')
+        .replace(/[^\w\-_\+]+/g, sep)
+        .replace(new RegExp(sep + "+"), sep)
+        .replace(new RegExp("^" + sep + "|" + sep + "$"), '')
+        .toLowerCase();
+    },
+    toCSSClass: function() { return (arguments[0] || "") + "." + this; },
+    interpolate: function(obj) {
+      var result = this;
+      $.each(result.match(/\{\w+\}/g), function(i, item) {
+        var k = item.replace(/\{|\}/g, '');
+        if(obj[k]) { result = result.replace(new RegExp(item), obj[k]); }
+      });
+      return result;
+    },
+    strip: function() { return this.replace(/^ +| +$/g, ''); }
+  });
+})(jQuery);
 
 (function($) {
   $.twitter = {
@@ -31,9 +27,13 @@ String.prototype.strip = function() {
       user: "http://twitter.com/{username}",
       status: "http://twitter.com/{username}/status/{id}"
     },
-    domID: function(tweet) {
-      return "tweet-{id}".interpolate({id: tweet.id});
-    },
+    domID: function(tweet) { return "tweet-{id}".interpolate({id: tweet.id}); },
+    tweetURL: function(tweet) { return $.twitter.urls.status.interpolate({username: $.twitter.username(tweet), id: tweet.id}); },
+    image: function(tweet) { return $("<img />").attr({src: (tweet.user ? tweet.user.profile_image_url : tweet.profile_image_url), width: 48, height: 48}); },
+    timestamp: function(tweet) { return new Date(tweet.created_at).toUTCString(); },
+    prettyTimestamp: function(tweet) { return $.prettyDate(tweet.created_at); },
+    username: function(tweet) { return tweet.user ? tweet.user.screen_name : tweet.from_user; },
+    displayName: function(tweet) { return tweet.user ? tweet.user.name : tweet.from_user; },
     userURL: function(tweet) {
       var username, displayName;
       
@@ -46,12 +46,6 @@ String.prototype.strip = function() {
       }
       
       return $("<a />").attr({href: $.twitter.urls.user.interpolate({username: username}), target: "_blank"}).html(displayName);
-    },
-    tweetURL: function(tweet) {
-      return $.twitter.urls.status.interpolate({username: $.twitter.username(tweet), id: tweet.id});
-    },
-    image: function(tweet) {
-      return $("<img />").attr({src: (tweet.user ? tweet.user.profile_image_url : tweet.profile_image_url), width: 48, height: 48});
     },
     linkedText: function(tweet) {
       var text = tweet.text,
@@ -71,26 +65,12 @@ String.prototype.strip = function() {
       }
       
       return text;
-    },
-    timestamp: function(tweet) {
-      return new Date(tweet.created_at).toUTCString();
-    },
-    prettyTimestamp: function(tweet) {
-      return $.prettyDate(tweet.created_at);
-    },
-    username: function(tweet) {
-      return tweet.user ? tweet.user.screen_name : tweet.from_user;
-    },
-    displayName: function(tweet) {
-      return tweet.user ? tweet.user.name : tweet.from_user;
     }
   };
 })(jQuery);
 
 (function($) {
-  $.fn.outerHTML = function() {
-    return $("<div/>").append(this.eq(0).clone()).html();
-  };
+  $.fn.outerHTML = function() { return $("<div/>").append(this.eq(0).clone()).html(); };
   
   $.fn.defaultValueActsAsHint = function() {
     var handleItem = function(idx, item) {
@@ -122,8 +102,7 @@ String.prototype.strip = function() {
     var date = new Date(time || ""),
         diff = (((new Date()).getTime() - date.getTime()) / 1000),
         day_diff = Math.floor(diff / 86400);
-    if ( isNaN(day_diff) || day_diff < 0 || day_diff >= 31 )
-      return time;
+    if ( isNaN(day_diff) || day_diff < 0 || day_diff >= 31 ) { return time; }
     
     return day_diff == 0 && (
         diff < 60 && "just now" ||
@@ -134,23 +113,5 @@ String.prototype.strip = function() {
       day_diff == 1 && "Yesterday" ||
       day_diff < 7 && day_diff + " days ago" ||
       day_diff < 31 && Math.ceil( day_diff / 7 ) + " weeks ago";
-  };
-})(jQuery);
-
-(function($) {
-  $.log = function(text) {
-    if($.jitter.window.loggable()) {
-      window.console.log(text);
-    }
-  };
-  
-  $.benchmark = function(description, fn) {
-    if($.jitter.window.loggable()) {
-      var d1 = new Date();
-      fn();
-      $.log(description + ": " + (new Date() - d1));
-    } else {
-      fn();
-    }
   };
 })(jQuery);

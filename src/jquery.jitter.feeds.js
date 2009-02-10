@@ -56,7 +56,7 @@
         simpleTitle: options.currentFeed.simpleTitle,
         trackSince: options.currentFeed.trackSince,
         className: options.currentFeed.name.interpolate({
-          username: options.username, 
+          username: options.username,
           query: options.query.cssClassify(),
           groupName: options.groupName.cssClassify()
         }),
