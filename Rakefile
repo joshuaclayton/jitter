@@ -21,8 +21,8 @@ task :build do
         "jquery.jitter.defaults",
         "jquery.jitter.errors",
         "jquery.jitter.feeds",
-        "jquery.jitter.keyboard",
         "jquery.jitter.window",
+        "jquery.jitter.keyboard",
         "jquery.jitter.bindings"
       ].each do |js_file|
         result << File.path_to_string(File.join(JITTER_SOURCE_DIR, "#{js_file}.js"))
