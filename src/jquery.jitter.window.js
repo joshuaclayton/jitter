@@ -7,6 +7,23 @@
     $(document).trigger("jitter-tweet-delete", $.extend({}, {tweets:tweets}, options));
   };
   
+  var buildReadSelector = function(options, args) {
+    var selector = "#tweets .feed-wrapper",
+        opts = $.extend({}, {visible: true}, options);
+    
+    if(opts.feed) {
+      if(typeof(opts.feed) === "function") { opts.feed = opts.feed(); }
+      if(typeof(opts.feed) === "string") {
+        selector += opts.feed;
+      } else if(opts.feed.className) {
+        selector += opts.feed.className.toCSSClass();
+      }
+    }
+    
+    if(opts.visible) { selector += ":visible"; }
+    return selector += " div.tweet" + (args ? args.suffix : "");
+  };
+  
   $.jitter.window = {
     loggable: function() { return window.console && window.console.log; },
     container: function() { return $("#content"); },
@@ -30,6 +47,45 @@
       $("div.timestamp:visible").each(function(idx, item) {
         $(item).html($.prettyDate($(item).attr("title")));
       });
+    },
+    unread: function() {
+      var filter = arguments[0] || null,
+          options = $.extend({}, {onlyFilter: false}, (arguments[1] || {}));
+      
+      var self = {
+        increase: function(count) {
+          if(!options.onlyFilter === true) {
+            $(document).data("jitter-unread", ($(document).data("jitter-unread") || 0) + count);
+          }
+          if(filter) {
+            $(document).data("jitter-unread-" + filter, ($(document).data("jitter-unread-" + filter) || 0) + count);
+          }
+          return count;
+        },
+        decrease: function(count) {
+          if(!options.onlyFilter === true) {
+            $(document).data("jitter-unread", $(document).data("jitter-unread") - count);
+          }
+          if(filter) {
+            $(document).data("jitter-unread-" + filter, $(document).data("jitter-unread-" + filter) - count);
+          }
+          return count;
+        },
+        empty: function() {
+          if(filter) {
+            var unreadCountHandle = "jitter-unread-" + filter,
+                unreadCount = $(document).data(unreadCountHandle);
+            $(document).data(unreadCountHandle, 0);
+            $(document).data("jitter-unread", $(document).data("jitter-unread") - unreadCount);
+          }
+          return 0;
+        },
+        count: function() {
+          return filter ? $(document).data("jitter-unread-" + filter) : $(document).data("jitter-unread");
+        }
+      };
+      
+      return self;
     },
     build: {
       tweet: function(tweet, jitter) {
@@ -108,37 +164,11 @@
     },
     tweets: {
       read: function(options) {
-        var selector = "#tweets .feed-wrapper",
-            opts = $.extend({}, {visible: true}, options);
-        
-        if(opts.feed) {
-          if(typeof(opts.feed) === "function") { opts.feed = opts.feed(); }
-          if(typeof(opts.feed) === "string") {
-            selector += opts.feed;
-          } else if(opts.feed.className) {
-            selector += opts.feed.className.toCSSClass();
-          }
-        }
-        
-        if(opts.visible) { selector += ":visible"; }
-        selector += " div.tweet:not(.tweet-read)";
+        var selector = buildReadSelector(options, {suffix: ":not(.tweet-read)"});
         triggerTweet($(selector), {markAsCurrent: false, scrollToCurrent: false});
       },
       archive: function(options) {
-        var selector = "#tweets .feed-wrapper",
-            opts = $.extend({}, {visible: true}, options);
-        
-        if(opts.feed) {
-          if(typeof(opts.feed) === "function") { opts.feed = opts.feed(); }
-          if(typeof(opts.feed) === "string") {
-            selector += opts.feed;
-          } else if(opts.feed.className) {
-            selector += opts.feed.className.toCSSClass();
-          }
-        }
-        
-        if(opts.visible) { selector += ":visible"; }
-        selector += " div.tweet";
+        var selector = buildReadSelector(options);
         $(document).trigger("jitter-tweet-archive", {tweets: $(selector)});
       },
       current: {

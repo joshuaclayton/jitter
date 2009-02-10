@@ -58,8 +58,7 @@
     
     $(document).bind("jitter-success", function(event, info) {
       if(!info.data.length) { return; }
-      $(document).data("jitter-unread", ($(document).data("jitter-unread") || 0) + info.data.length);
-      $(document).data("jitter-unread-" + info.jitter.feed.className, ($(document).data("jitter-unread-" + info.jitter.feed.className) || 0) + info.data.length);
+      $.jitter.window.unread(info.jitter.feed.className).increase(info.data.length);
     });
     
     $(document).bind("jitter-tweet-read", function(event, info) {
@@ -68,22 +67,17 @@
       if(!$unreadTweets.length) { return; }
       
       if($unreadTweets.filter($.jitter.window.currentlyFilteredClass()).length === $unreadTweets.length && $.jitter.window.currentFeed()) {
-        var unreadCountHandle = "jitter-unread-" + $.jitter.window.currentFeed().className,
-            unreadCount = $(document).data(unreadCountHandle);
-        $(document).data(unreadCountHandle, unreadCount - $unreadTweets.length);
+        $.jitter.window.unread($.jitter.window.currentFeed().className, {onlyFilter: true}).decrease($unreadTweets.length);
       } else {
         $unreadTweets.each(function(itx, tweet) {
-          var unreadCountHandle = "jitter-unread-" + $(tweet).data("jitter").feed.className,
-              unreadCount = $(document).data(unreadCountHandle);
-          $(document).data(unreadCountHandle, unreadCount - 1);
+          $.jitter.window.unread($(tweet).data("jitter").feed.className, {onlyFilter: true}).decrease(1);
         });
       }
       
-      $(document).data("jitter-unread", $(document).data("jitter-unread") - $unreadTweets.length);
+      $.jitter.window.unread().decrease($unreadTweets.length);
       $unreadTweets.addClass("tweet-read");
     });
     
-    // create filter link when jitter starts
     $(document).bind("jitter-started", function(event, info) {
       $.jitter.window.build.filter(info.jitter)
         .bind("setData", function(e, key, val) {
@@ -100,16 +94,11 @@
         .appendTo($(".jitter-filters"));
     });
     
-    // create filter link when jitter stops
     $(document).bind("jitter-stopped", function(event, info) {
       $("#tweets").find(info.jitter.feed.className.toCSSClass("div")).remove();
       $("#tweets-archive").find(info.jitter.feed.className.toCSSClass("div")).remove();
       $(info.jitter.feed.className.toCSSClass(".jitter-filter")).remove();
-      
-      var unreadCountHandle = "jitter-unread-" + info.jitter.feed.className,
-          unreadCount = $(document).data(unreadCountHandle);
-      $(document).data(unreadCountHandle, 0);
-      $(document).data("jitter-unread", $(document).data("jitter-unread") - unreadCount);
+      $.jitter.window.unread(info.jitter.feed.className).empty();
     });
     
     $(document).bind("jitter-change", function(event, info) {

@@ -51,7 +51,7 @@
     process: function(options) {
       options = $.extend({}, {groupName: "", query: "", username: "", password: ""}, options);
       options.currentFeed = typeof(options.feed) === "string" ? $.jitter.feeds[options.feed] : options.feed;
-
+      
       var self = {
         simpleTitle: options.currentFeed.simpleTitle,
         trackSince: options.currentFeed.trackSince,

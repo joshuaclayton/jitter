@@ -41,7 +41,7 @@ String.prototype.strip = function() {
         username    = $.twitter.username(tweet);
         displayName = $.twitter.displayName(tweet);
       } else if(typeof(tweet) == "string") {
-        username = tweet.replace(/\@/, '');
+        username    = tweet.replace(/\@/, '');
         displayName = tweet;
       }
       
@@ -60,13 +60,7 @@ String.prototype.strip = function() {
       
       if(urlMatches) {
         $.each(urlMatches, function(idx, item) {
-          text = text.replace(
-            RegExp(item, "g"), 
-            $("<a/>")
-              .attr({href: item, target: "_blank"})
-              .html(item)
-              .outerHTML()
-          );
+          text = text.replace(RegExp(item, "g"), $("<a/>").attr({href: item, target: "_blank"}).html(item).outerHTML());
         });
       }
       
@@ -130,7 +124,7 @@ String.prototype.strip = function() {
         day_diff = Math.floor(diff / 86400);
     if ( isNaN(day_diff) || day_diff < 0 || day_diff >= 31 )
       return time;
-
+    
     return day_diff == 0 && (
         diff < 60 && "just now" ||
         diff < 120 && "1 minute ago" ||

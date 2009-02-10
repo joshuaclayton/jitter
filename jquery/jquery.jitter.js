@@ -41,7 +41,7 @@ String.prototype.strip = function() {
         username    = $.twitter.username(tweet);
         displayName = $.twitter.displayName(tweet);
       } else if(typeof(tweet) == "string") {
-        username = tweet.replace(/\@/, '');
+        username    = tweet.replace(/\@/, '');
         displayName = tweet;
       }
       
@@ -60,13 +60,7 @@ String.prototype.strip = function() {
       
       if(urlMatches) {
         $.each(urlMatches, function(idx, item) {
-          text = text.replace(
-            RegExp(item, "g"), 
-            $("<a/>")
-              .attr({href: item, target: "_blank"})
-              .html(item)
-              .outerHTML()
-          );
+          text = text.replace(RegExp(item, "g"), $("<a/>").attr({href: item, target: "_blank"}).html(item).outerHTML());
         });
       }
       
@@ -130,7 +124,7 @@ String.prototype.strip = function() {
         day_diff = Math.floor(diff / 86400);
     if ( isNaN(day_diff) || day_diff < 0 || day_diff >= 31 )
       return time;
-
+    
     return day_diff == 0 && (
         diff < 60 && "just now" ||
         diff < 120 && "1 minute ago" ||
@@ -159,7 +153,8 @@ String.prototype.strip = function() {
       fn();
     }
   };
-})(jQuery);(function($) {
+})(jQuery);
+(function($) {
   $.jitter = function(settings) {
     var options = $.extend({}, $.jitter.defaults, settings),
         self = {feed: $.jitter.feeds.process(options)},
@@ -270,7 +265,7 @@ String.prototype.strip = function() {
     process: function(options) {
       options = $.extend({}, {groupName: "", query: "", username: "", password: ""}, options);
       options.currentFeed = typeof(options.feed) === "string" ? $.jitter.feeds[options.feed] : options.feed;
-
+      
       var self = {
         simpleTitle: options.currentFeed.simpleTitle,
         trackSince: options.currentFeed.trackSince,
@@ -400,13 +395,31 @@ String.prototype.strip = function() {
       }
     }
   };
-})(jQuery);(function($) {
+})(jQuery);
+(function($) {
   var triggerTweet = function(tweets, options) {
     $(document).trigger("jitter-tweet-read", $.extend({}, {tweets:tweets, markAsCurrent: true, scrollToCurrent: true}, options));
   };
   
   var deleteTweet = function(tweets, options) {
     $(document).trigger("jitter-tweet-delete", $.extend({}, {tweets:tweets}, options));
+  };
+  
+  var buildReadSelector = function(options, args) {
+    var selector = "#tweets .feed-wrapper",
+        opts = $.extend({}, {visible: true}, options);
+    
+    if(opts.feed) {
+      if(typeof(opts.feed) === "function") { opts.feed = opts.feed(); }
+      if(typeof(opts.feed) === "string") {
+        selector += opts.feed;
+      } else if(opts.feed.className) {
+        selector += opts.feed.className.toCSSClass();
+      }
+    }
+    
+    if(opts.visible) { selector += ":visible"; }
+    return selector += " div.tweet" + (args ? args.suffix : "");
   };
   
   $.jitter.window = {
@@ -432,6 +445,45 @@ String.prototype.strip = function() {
       $("div.timestamp:visible").each(function(idx, item) {
         $(item).html($.prettyDate($(item).attr("title")));
       });
+    },
+    unread: function() {
+      var filter = arguments[0] || null,
+          options = $.extend({}, {onlyFilter: false}, (arguments[1] || {}));
+      
+      var self = {
+        increase: function(count) {
+          if(!options.onlyFilter === true) {
+            $(document).data("jitter-unread", ($(document).data("jitter-unread") || 0) + count);
+          }
+          if(filter) {
+            $(document).data("jitter-unread-" + filter, ($(document).data("jitter-unread-" + filter) || 0) + count);
+          }
+          return count;
+        },
+        decrease: function(count) {
+          if(!options.onlyFilter === true) {
+            $(document).data("jitter-unread", $(document).data("jitter-unread") - count);
+          }
+          if(filter) {
+            $(document).data("jitter-unread-" + filter, $(document).data("jitter-unread-" + filter) - count);
+          }
+          return count;
+        },
+        empty: function() {
+          if(filter) {
+            var unreadCountHandle = "jitter-unread-" + filter,
+                unreadCount = $(document).data(unreadCountHandle);
+            $(document).data(unreadCountHandle, 0);
+            $(document).data("jitter-unread", $(document).data("jitter-unread") - unreadCount);
+          }
+          return 0;
+        },
+        count: function() {
+          return filter ? $(document).data("jitter-unread-" + filter) : $(document).data("jitter-unread");
+        }
+      };
+      
+      return self;
     },
     build: {
       tweet: function(tweet, jitter) {
@@ -510,37 +562,11 @@ String.prototype.strip = function() {
     },
     tweets: {
       read: function(options) {
-        var selector = "#tweets .feed-wrapper",
-            opts = $.extend({}, {visible: true}, options);
-        
-        if(opts.feed) {
-          if(typeof(opts.feed) === "function") { opts.feed = opts.feed(); }
-          if(typeof(opts.feed) === "string") {
-            selector += opts.feed;
-          } else if(opts.feed.className) {
-            selector += opts.feed.className.toCSSClass();
-          }
-        }
-        
-        if(opts.visible) { selector += ":visible"; }
-        selector += " div.tweet:not(.tweet-read)";
+        var selector = buildReadSelector(options, {suffix: ":not(.tweet-read)"});
         triggerTweet($(selector), {markAsCurrent: false, scrollToCurrent: false});
       },
       archive: function(options) {
-        var selector = "#tweets .feed-wrapper",
-            opts = $.extend({}, {visible: true}, options);
-        
-        if(opts.feed) {
-          if(typeof(opts.feed) === "function") { opts.feed = opts.feed(); }
-          if(typeof(opts.feed) === "string") {
-            selector += opts.feed;
-          } else if(opts.feed.className) {
-            selector += opts.feed.className.toCSSClass();
-          }
-        }
-        
-        if(opts.visible) { selector += ":visible"; }
-        selector += " div.tweet";
+        var selector = buildReadSelector(options);
         $(document).trigger("jitter-tweet-archive", {tweets: $(selector)});
       },
       current: {
@@ -564,7 +590,8 @@ String.prototype.strip = function() {
       }
     }
   };
-})(jQuery);(function($) {
+})(jQuery);
+(function($) {
   $.jitter.bindings = function() {
     $(document).bind("jitter-tweet-read", function(event, info) {
       if(!info.tweets.length) { return; }
@@ -624,8 +651,7 @@ String.prototype.strip = function() {
     
     $(document).bind("jitter-success", function(event, info) {
       if(!info.data.length) { return; }
-      $(document).data("jitter-unread", ($(document).data("jitter-unread") || 0) + info.data.length);
-      $(document).data("jitter-unread-" + info.jitter.feed.className, ($(document).data("jitter-unread-" + info.jitter.feed.className) || 0) + info.data.length);
+      $.jitter.window.unread(info.jitter.feed.className).increase(info.data.length);
     });
     
     $(document).bind("jitter-tweet-read", function(event, info) {
@@ -634,22 +660,17 @@ String.prototype.strip = function() {
       if(!$unreadTweets.length) { return; }
       
       if($unreadTweets.filter($.jitter.window.currentlyFilteredClass()).length === $unreadTweets.length && $.jitter.window.currentFeed()) {
-        var unreadCountHandle = "jitter-unread-" + $.jitter.window.currentFeed().className,
-            unreadCount = $(document).data(unreadCountHandle);
-        $(document).data(unreadCountHandle, unreadCount - $unreadTweets.length);
+        $.jitter.window.unread($.jitter.window.currentFeed().className, {onlyFilter: true}).decrease($unreadTweets.length);
       } else {
         $unreadTweets.each(function(itx, tweet) {
-          var unreadCountHandle = "jitter-unread-" + $(tweet).data("jitter").feed.className,
-              unreadCount = $(document).data(unreadCountHandle);
-          $(document).data(unreadCountHandle, unreadCount - 1);
+          $.jitter.window.unread($(tweet).data("jitter").feed.className, {onlyFilter: true}).decrease(1);
         });
       }
       
-      $(document).data("jitter-unread", $(document).data("jitter-unread") - $unreadTweets.length);
+      $.jitter.window.unread().decrease($unreadTweets.length);
       $unreadTweets.addClass("tweet-read");
     });
     
-    // create filter link when jitter starts
     $(document).bind("jitter-started", function(event, info) {
       $.jitter.window.build.filter(info.jitter)
         .bind("setData", function(e, key, val) {
@@ -666,16 +687,11 @@ String.prototype.strip = function() {
         .appendTo($(".jitter-filters"));
     });
     
-    // create filter link when jitter stops
     $(document).bind("jitter-stopped", function(event, info) {
       $("#tweets").find(info.jitter.feed.className.toCSSClass("div")).remove();
       $("#tweets-archive").find(info.jitter.feed.className.toCSSClass("div")).remove();
       $(info.jitter.feed.className.toCSSClass(".jitter-filter")).remove();
-      
-      var unreadCountHandle = "jitter-unread-" + info.jitter.feed.className,
-          unreadCount = $(document).data(unreadCountHandle);
-      $(document).data(unreadCountHandle, 0);
-      $(document).data("jitter-unread", $(document).data("jitter-unread") - unreadCount);
+      $.jitter.window.unread(info.jitter.feed.className).empty();
     });
     
     $(document).bind("jitter-change", function(event, info) {
