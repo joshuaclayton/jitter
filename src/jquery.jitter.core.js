@@ -1,7 +1,7 @@
 (function($) {
   $.jitter = function(settings) {
     var options = $.extend({}, $.jitter.defaults, settings),
-        self = {feed: $.jitter.feeds.process(options)},
+        self = {feed: $.jitter.feeds.process(options), settings: options},
         tweets = false;
     
     var updateTweets = function() {

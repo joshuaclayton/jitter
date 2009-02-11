@@ -19,6 +19,47 @@
     },
     strip: function() { return this.replace(/^ +| +$/g, ''); }
   });
+  $.extend(Array.prototype, {
+    compact: function() {
+      var result = [];
+      $.each(this, function(idx, item) {
+        if(item === null) { return; }
+        result.push(item);
+      });
+      return result;
+    },
+    uniq: function() {
+      var resultArray = this.sort(function(a,b) { if(JSON.stringify(a) == JSON.stringify(b)) { return 0; } if(JSON.stringify(a) > JSON.stringify(b)) { return 1; } return -1; }),
+          first = 0,
+          last = resultArray.length;
+
+      for(var alt; (alt = first) != last && ++first != last; ) {
+        if(resultArray[alt] === resultArray[first] || JSON.stringify(resultArray[alt]) == JSON.stringify(resultArray[first])) {
+          for(; ++first != last;) {
+            if (resultArray[alt] !== resultArray[first] && JSON.stringify(resultArray[alt]) != JSON.stringify(resultArray[first])) { resultArray[++alt] = resultArray[first]; }
+          }
+          ++alt;
+          resultArray.length = alt;
+          return resultArray;
+        }
+      }
+
+      return resultArray;
+    },
+    remove: function(obj) {
+      if(typeof(obj) == "object") {
+        var translatedThis = [];
+        $.each(this, function(idx, item) {
+          translatedThis.push(JSON.stringify(item));
+        });
+        var idx = translatedThis.indexOf(JSON.stringify(obj));
+        if(idx != -1) { this.splice(idx, 1); }
+      } else {
+        this.splice(this.indexOf(obj), 1);
+      }
+      return this;
+    }
+  });
 })(jQuery);
 
 (function($) {
@@ -71,6 +112,7 @@
 
 (function($) {
   $.fn.outerHTML = function() { return $("<div/>").append(this.eq(0).clone()).html(); };
+  $.guid = function() { return +new Date(); };
 })(jQuery);
 
 (function($) {

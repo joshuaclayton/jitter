@@ -71,6 +71,8 @@
     });
     
     $(document).bind("jitter-started", function(event, info) {
+      $.jitter.window.jitters.push(info.jitter.feed.className);
+      
       $.jitter.window.build.filter(info.jitter)
         .bind("setData", function(e, key, val) {
           if(key === "unreadCount") {
@@ -87,10 +89,25 @@
     });
     
     $(document).bind("jitter-stopped", function(event, info) {
+      $.jitter.window.jitters.splice($.jitter.window.jitters.indexOf(info.jitter.feed.className), 1);
       $("#tweets").find(info.jitter.feed.className.toCSSClass("div")).remove();
       $("#tweets-archive").find(info.jitter.feed.className.toCSSClass("div")).remove();
       $(info.jitter.feed.className.toCSSClass(".jitter-filter")).remove();
       $.jitter.window.unread(info.jitter.feed.className).empty();
+    });
+    
+    $(document).bind("jitter-started", function(event, info) {
+      if(!$.cookieJar) { return; }
+      var jitters = $.cookieJar.get("jitters") || [];
+      jitters.push(info.jitter.settings);
+      $.cookieJar.set("jitters", jitters.compact().uniq());
+    });
+    
+    $(document).bind("jitter-stopped", function(event, info) {
+      if(!$.cookieJar) { return; }
+      var jitters = $.cookieJar.get("jitters");
+      jitters.remove(info.jitter.settings);
+      $.cookieJar.set("jitters", jitters.compact().uniq());
     });
     
     $(document).bind("jitter-change", function(event, info) {

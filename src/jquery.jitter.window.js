@@ -20,8 +20,18 @@
   };
   
   $.jitter.window = {
+    jitters: [],
     loggable: function() { return window.console && window.console.log; },
     container: function() { return $("#content"); },
+    loadFromCookieJar: function() {
+      if(!$.cookieJar) { return; }
+      $.each($.cookieJar.get("jitters"), function(idx, settings) {
+        if($.jitter.window.jitters.indexOf($.jitter.feeds.process(settings).className) == -1) {
+          var newJitter = $.jitter(settings).start();
+          if(!$.jitter.window.currentJitter()) { $.jitter.window.currentJitter(newJitter); }
+        }
+      });
+    },
     currentJitter: function() {
       return arguments.length ? $(document).data("jitter-current", arguments[0]) : $(document).data("jitter-current");
     },
@@ -131,6 +141,58 @@
           $wrapper.find("dl").append($dt).append($dd);
         });
         return $wrapper;
+      },
+      feedForm: function(feed) {
+        var uniqueId = $.guid();
+        
+        feed = $.jitter.feeds[feed];
+        if(!feed || typeof(feed) != "object") { return; }
+        
+        var $fieldset = $("<fieldset/>").append("<legend>" + feed.simpleTitle + "</legend>"),
+          $form = $("<form />")
+            .attr({method: "#"})
+            .submit(function() {
+              var $this = $(this);
+              var username  = $this.find("input[name=username]").val(),
+                  password  = $this.find("input[name=password]").val(),
+                  groupName = $this.find("input[name=groupName]").val(),
+                  users     = $this.find("input[name=users]").val(),
+                  query     = $this.find("input[name=query]").val();
+              
+              if(users) { users = users.split(/ *, */); }
+              var options = {};
+              
+              if(feed.requiresUsername) { options.username = username; }
+              if(feed.requiresPassword) { options.password = password; }
+              if(feed.performSearch)    { options.query = query; }
+              if(feed.filteredUsers)    { options.groupName = groupName; options.users = users; }
+              
+              options.feed = feed;
+              $.jitter(options).start();
+              $this.find("input:not([type=submit])").val("");
+              $this.find("input").blur();
+              return false;
+            });
+        
+        var buildInputs = function(name, title) {
+          $fieldset
+            .append(
+              $("<label/>")
+                .attr({"for": (name + "-" + uniqueId)})
+                .html(title)
+            )
+            .append(
+              $("<input/>")
+                .attr({type: "text", name: name, id: name + "-" + uniqueId})
+            );
+        };
+        
+        if(feed.requiresUsername) { buildInputs("username", "Username"); }
+        if(feed.requiresPassword) { buildInputs("password", "Password"); }
+        if(feed.filteredUsers)    { buildInputs("groupName", "Group Name"); buildInputs("users", "Users"); }
+        if(feed.performSearch)    { buildInputs("query", "Search"); }
+        
+        return $form.append($fieldset.append("<input type='submit' name='Add Feed' />"));
       }
     },
     tweets: {
