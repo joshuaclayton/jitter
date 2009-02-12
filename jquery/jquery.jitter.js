@@ -367,7 +367,7 @@
     container: function() { return $("#content"); },
     loadFromCookieJar: function() {
       if(!$.cookieJar) { return; }
-      $.each($.cookieJar.get("jitters"), function(idx, settings) {
+      $.each($.cookieJar.get("jitters") || [], function(idx, settings) {
         if($.jitter.window.jitters.indexOf($.jitter.feeds.process(settings).className) == -1) {
           var newJitter = $.jitter(settings).start();
           if(!$.jitter.window.currentJitter()) { $.jitter.window.currentJitter(newJitter); }
@@ -473,11 +473,12 @@
           <div id='tweets' class='span-16 prepend-8'/>\
           <div id='tweets-archive' class='span-16 prepend-8'/>")
           .find(".sidebar")
-            .append("<hr class='space' />")
-            .append($.jitter.window.build.feedForm("search"))
-            .append($.jitter.window.build.feedForm("userTimeline"))
-            .append($.jitter.window.build.feedForm("friendsTimeline"))
-            .append($.jitter.window.build.keyboardCheatSheet()).end();
+            .append($("<div class='forms'></div>")
+              .append($.jitter.window.build.feedForm("search"))
+              .append($.jitter.window.build.feedForm("friendsTimeline"))
+              .append($.jitter.window.build.feedForm("groupTimeline"))
+              .append($.jitter.window.build.keyboardCheatSheet())
+            ).end();
       },
       keyboardCheatSheet: function() {
         var $wrapper = $("<div class='cheatsheet clearfix'><h3>Keyboard Cheatsheet</h3><dl></dl></div>");

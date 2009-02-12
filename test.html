@@ -8,10 +8,8 @@
     <script src="jquery/json.js"></script>
     <script src="jquery/jquery.cookiejar.js"></script>
     <script src="jquery/jquery.scrollTo.min.js"></script>
+    <!-- <script type="text/javascript" src="jquery/jquery.jitter.js"></script> -->
     <script src="src/jquery.jitter.utilities.js"></script>
-<!--
-    <script type="text/javascript" src="jquery/jquery.jitter.js"></script>
--->
     <script src="src/jquery.jitter.core.js"></script>
     <script src="src/jquery.jitter.defaults.js"></script>
     <script src="src/jquery.jitter.errors.js"></script>
@@ -31,10 +29,6 @@
       $(document).ready(function() {
         $.jitter.bindings();
         $.jitter.window.build.initialPage();
-        // $.jitter.window.currentJitter($.jitter().start());
-        // $.jitter({query: "blueprint css"}).start();
-        // $.jitter({query: "ruby on rails"}).start();
-        // $.jitter({feed: "groupTimeline", users: ["jstew1974", "jackbaty", "timkelty", "kswedberg"], groupName: "Fusionary Media"}).start();
         $.jitter.window.loadFromCookieJar();
         $.jitter.keyboard.enable();
       });

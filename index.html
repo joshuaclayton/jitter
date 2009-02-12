@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Jitter!</title>
-    
-    <script type="text/javascript" src="jquery/jquery-1.3.min.js"></script>
-    <script type="text/javascript" src="jquery/jquery.easing.js"></script>
-    <script type="text/javascript" src="jquery/jquery.timer.js"></script>
-    <script type="text/javascript" src="jquery/jquery.cookiejar.js"></script>
-    <script type="text/javascript" src="jquery/jquery.scrollTo.min.js"></script>
-    <script type="text/javascript" src="jquery/jquery.jitter.js"></script>
-    
+    <title>Jitter</title>
+    <script src="jquery/jquery-1.3.min.js"></script>
+    <script src="jquery/jquery.easing.js"></script>
+    <script src="jquery/jquery.timer.js"></script>
+    <script src="jquery/json.js"></script>
+    <script src="jquery/jquery.cookiejar.js"></script>
+    <script src="jquery/jquery.scrollTo.min.js"></script>
+    <script src="jquery/jquery.jitter.js"></script>
+
     <link rel="stylesheet" href="stylesheets/screen.css" type="text/css" media="screen, projection" />
     <link rel="stylesheet" href="stylesheets/my-screen.css" type="text/css" media="screen, projection" />
     
@@ -21,11 +21,7 @@
       $(document).ready(function() {
         $.jitter.bindings();
         $.jitter.window.build.initialPage();
-        $.jitter.window.currentJitter($.jitter().start());
-        $.jitter({query: "blueprint css"}).start();
-        $.jitter({query: "ruby on rails"}).start();
-        $.jitter({query: "git"}).start();
-        $.jitter({feed: "groupTimeline", users: ["jstew1974", "jackbaty", "timkelty", "kswedberg"], groupName: "Fusionary Media"}).start();
+        $.jitter.window.loadFromCookieJar();
         $.jitter.keyboard.enable();
       });
     </script>
