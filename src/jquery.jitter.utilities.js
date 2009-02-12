@@ -22,17 +22,43 @@
   $.extend(Array.prototype, {
     compact: function() {
       var result = [];
-      $.each(this, function(idx, item) {
-        if(item === null) { return; }
-        result.push(item);
-      });
+      for(var i = 0, length = this.length; i < length; i++) {
+        if(this[i] === null) { return; }
+        result.push(this[i]);
+      }
+      return result;
+    },
+    clone: function() {
+      var result = [];
+      for(var i = 0, len = this.length; i < len; i++) { result.push(this[i]); }
       return result;
     },
     uniq: function() {
-      var resultArray = this.sort(function(a,b) { if(JSON.stringify(a) == JSON.stringify(b)) { return 0; } if(JSON.stringify(a) > JSON.stringify(b)) { return 1; } return -1; }),
+      var resultArray = this.clone().sort(function(a,b) { if(a == b || JSON.stringify(a) == JSON.stringify(b)) { return 0; } if(a > b || JSON.stringify(a) > JSON.stringify(b)) { return 1; } return -1; }),
+          clone = this.clone(),
           first = 0,
-          last = resultArray.length;
-
+          last = resultArray.length,
+          sorted = arguments[0] || false;
+      
+      var unsort = function(sortedArray) {
+        var result = [];
+        var parsedSortedArray = $.map(sortedArray, function(i) { return JSON.stringify(i); }),
+            parsedClone = $.map(clone, function(i) { return JSON.stringify(i); });
+        
+        for(var i = 0, len = parsedClone.length; i < len; i++) {
+          if(!parsedSortedArray.length) { break; }
+          var current = parsedClone[i],
+              sortedIndex = parsedSortedArray.indexOf(current);
+          
+          if(sortedIndex != -1) {
+            result.push(clone[i]);
+            parsedSortedArray.splice(sortedIndex, 1);
+          }
+        }
+        
+        return result;
+      };
+      
       for(var alt; (alt = first) != last && ++first != last; ) {
         if(resultArray[alt] === resultArray[first] || JSON.stringify(resultArray[alt]) == JSON.stringify(resultArray[first])) {
           for(; ++first != last;) {
@@ -40,19 +66,16 @@
           }
           ++alt;
           resultArray.length = alt;
-          return resultArray;
+          return sorted ? resultArray : unsort(resultArray);
         }
       }
-
-      return resultArray;
+      
+      return sorted ? resultArray : unsort(resultArray);
     },
     remove: function(obj) {
       if(typeof(obj) == "object") {
-        var translatedThis = [];
-        $.each(this, function(idx, item) {
-          translatedThis.push(JSON.stringify(item));
-        });
-        var idx = translatedThis.indexOf(JSON.stringify(obj));
+        var translatedThis = $.map(this, function(i) { return JSON.stringify(i); }),
+            idx = translatedThis.indexOf(JSON.stringify(obj));
         if(idx != -1) { this.splice(idx, 1); }
       } else {
         this.splice(this.indexOf(obj), 1);
@@ -131,5 +154,20 @@
       day_diff == 1 && "Yesterday" ||
       day_diff < 7 && day_diff + " days ago" ||
       day_diff < 31 && Math.ceil( day_diff / 7 ) + " weeks ago";
+  };
+})(jQuery);
+
+(function($) {
+  $.log = function(txt) {
+    if($.jitter.window.loggable()) {
+      window.console.log(txt);
+    }
+  };
+  
+  $.benchmark = function(fn) {
+    var now = new Date(),
+        res = fn();
+    $.log("Took " + (new Date() - now) + " milliseconds.");
+    return res;
   };
 })(jQuery);

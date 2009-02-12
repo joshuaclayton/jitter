@@ -81,22 +81,22 @@
           <div class="tweet clearfix">\
             <div class="meta span-5">\
               <div class="author">\
-                <div class="tweetImage span-2"/><div class="displayName span-3 last"/>\
+                <div class="tweet-image span-2"/><div class="display-name span-3 last"/>\
               </div>\
-              <div class="createdAt timestamp"/>\
+              <div class="created-at timestamp"/>\
               <div class="backtrack"/>\
             </div>\
-            <div class="tweetBody span-11 last"/>\
+            <div class="tweet-body span-11 last"/>\
           </div>')
           .attr("id", $.twitter.domID(tweet))
           .data("jitter", jitter)
           .click(function() {
             $(document).trigger("jitter-tweet-read", {tweets: $(this), markAsCurrent: true, scrollToCurrent: true});
           })
-          .find(".tweetBody").html($.twitter.linkedText(tweet)).end()
-          .find(".author .displayName").html($.twitter.userURL(tweet)).end()
-          .find(".author .tweetImage").append($.twitter.image(tweet)).end()
-          .find(".createdAt")
+          .find(".tweet-body").html($.twitter.linkedText(tweet)).end()
+          .find(".author .display-name").html($.twitter.userURL(tweet)).end()
+          .find(".author .tweet-image").append($.twitter.image(tweet)).end()
+          .find(".created-at")
             .html($.twitter.prettyTimestamp(tweet))
             .attr("title", $.twitter.timestamp(tweet))
             .end();
@@ -124,13 +124,17 @@
       initialPage: function() {
         if(!$.jitter.window.container()) { return; }
         $.jitter.window.container().append("\
-          <div class='span-8 sidebar'>\
+          <div class='span-8 sidebar clearfix'>\
             <div class='header span-8 last'><h1>Jitter</h1></div>\
-            <div class='jitter-filters span-8 last'/>\
+            <div class='jitter-filters span-8 last clearfix'/>\
           </div>\
           <div id='tweets' class='span-16 prepend-8'/>\
           <div id='tweets-archive' class='span-16 prepend-8'/>")
           .find(".sidebar")
+            .append("<hr class='space' />")
+            .append($.jitter.window.build.feedForm("search"))
+            .append($.jitter.window.build.feedForm("userTimeline"))
+            .append($.jitter.window.build.feedForm("friendsTimeline"))
             .append($.jitter.window.build.keyboardCheatSheet()).end();
       },
       keyboardCheatSheet: function() {
@@ -148,7 +152,7 @@
         feed = $.jitter.feeds[feed];
         if(!feed || typeof(feed) != "object") { return; }
         
-        var $fieldset = $("<fieldset/>").append("<legend>" + feed.simpleTitle + "</legend>"),
+        var $fieldset = $("<fieldset/>").append("<legend><span>" + feed.simpleTitle + "</span></legend>"),
           $form = $("<form />")
             .attr({method: "#"})
             .submit(function() {
@@ -175,6 +179,8 @@
             });
         
         var buildInputs = function(name, title) {
+          var fieldType = name == "password" ? "password" : "text";
+          
           $fieldset
             .append(
               $("<label/>")
@@ -183,7 +189,8 @@
             )
             .append(
               $("<input/>")
-                .attr({type: "text", name: name, id: name + "-" + uniqueId})
+                .attr({type: fieldType, name: name, id: name + "-" + uniqueId})
+                .addClass("text span-5")
             );
         };
         
@@ -192,7 +199,7 @@
         if(feed.filteredUsers)    { buildInputs("groupName", "Group Name"); buildInputs("users", "Users"); }
         if(feed.performSearch)    { buildInputs("query", "Search"); }
         
-        return $form.append($fieldset.append("<input type='submit' name='Add Feed' />"));
+        return $("<div class='jitterForm'/>").append($form.append($fieldset.append("<input type='submit' value='Add Feed' />")));
       }
     },
     tweets: {
@@ -210,8 +217,8 @@
         setToNext:      function() { triggerTweet($("#tweets .feed-wrapper:visible div.tweet.current").nextAll(":visible:first")); },
         setToPrevious:  function() { triggerTweet($("#tweets .feed-wrapper:visible div.tweet.current").prevAll(":visible:first")); },
         setToLast:      function() { triggerTweet($("#tweets .feed-wrapper:visible div.tweet:visible:last")); },
-        openLinks: function() { $("div.tweet.current div.tweetBody a").each(function(idx, anchor) { window.open($(anchor).attr("href"), "_blank"); }); },
-        openAuthorTwitterLink: function() { window.open($("div.tweet.current div.author div.displayName a").attr("href"), "_blank"); }
+        openLinks: function() { $("div.tweet.current div.tweet-body a").each(function(idx, anchor) { window.open($(anchor).attr("href"), "_blank"); }); },
+        openAuthorTwitterLink: function() { window.open($("div.tweet.current div.author div.display-name a").attr("href"), "_blank"); }
       }
     }
   };
