@@ -81,6 +81,9 @@
         this.splice(this.indexOf(obj), 1);
       }
       return this;
+    },
+    random: function() {
+      return this[Math.floor(Math.random() * this.length)];
     }
   });
 })(jQuery);
@@ -91,26 +94,6 @@
       user: "http://twitter.com/{username}",
       status: "http://twitter.com/{username}/status/{id}",
       post: "http://twitter.com/statuses/update.json"
-    },
-    post: function(credentials, message, reply_to_id) {
-      var creds = [];
-      if(typeof credentials == "object") { creds.push(credentials); } else { creds = credentials; }
-      $.each(creds, function(idx, credential) {
-        window.console.log($.twitter.urls.post);
-        $.ajax({
-          type: "POST",
-          data: {status: message},
-          url: $.twitter.urls.post,
-          dataType: "jsonp",
-          success: function(data) {
-            $(document).trigger("jitter-update-success", {data: data});
-          },
-          beforeSend:function(xhr){
-            xhr.setRequestHeader("Authorization", "Basic " + Base64.encode(credential.username + ":" + credential.password));
-            xhr.setRequestHeader("Cookie", '');
-          }
-        });
-      });
     },
     domID: function(tweet) { return "tweet-{id}".interpolate({id: tweet.id}); },
     tweetURL: function(tweet) { return $.twitter.urls.status.interpolate({username: $.twitter.username(tweet), id: tweet.id}); },
