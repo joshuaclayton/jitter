@@ -15,6 +15,12 @@
           if(tweets) { data = data.reverse(); }
           $(document).trigger("jitter-success", {data: data, jitter: self});
           if(!tweets && data) { tweets = true; }
+        },
+        beforeSend:function(xhr){
+          if(self.feed.requiresUsername && self.feed.requiresPassword) {
+            xhr.setRequestHeader("Authorization", "Basic " + Base64.encode(self.settings.username + ":" + self.settings.password));
+            xhr.setRequestHeader("Cookie", '');
+          }
         }
       });
     };

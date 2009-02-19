@@ -7,7 +7,7 @@
       title: "Public Timeline"
     },
     friendsTimeline: {
-      url: "http://{username}:{password}@twitter.com/statuses/friends_timeline.{format}",
+      url: "http://twitter.com/statuses/friends_timeline.{format}",
       requiresUsername: true,
       requiresPassword: true,
       trackSince: true,
@@ -32,7 +32,7 @@
       title: "Timeline for {username}"
     },
     directMessages: {
-      url: "http://{username}:{password}@twitter.com/direct_messages.{format}",
+      url: "http://twitter.com/direct_messages.{format}",
       trackSince: true,
       requiresUsername: true,
       requiresPassword: true,
@@ -64,7 +64,9 @@
           username: options.username,
           query: options.query,
           groupName: options.groupName
-        })
+        }),
+        requiresUsername: options.currentFeed.requiresUsername,
+        requiresPassword: options.currentFeed.requiresPassword
       };
       
       try {
