@@ -19,7 +19,6 @@
         beforeSend:function(xhr){
           if(self.feed.requiresUsername && self.feed.requiresPassword) {
             xhr.setRequestHeader("Authorization", "Basic " + Base64.encode(self.settings.username + ":" + self.settings.password));
-            xhr.setRequestHeader("Cookie", '');
           }
         }
       });

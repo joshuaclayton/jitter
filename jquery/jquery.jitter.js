@@ -196,7 +196,6 @@
         beforeSend:function(xhr){
           if(self.feed.requiresUsername && self.feed.requiresPassword) {
             xhr.setRequestHeader("Authorization", "Basic " + Base64.encode(self.settings.username + ":" + self.settings.password));
-            xhr.setRequestHeader("Cookie", '');
           }
         }
       });
@@ -368,7 +367,6 @@
         selector += opts.feed.className.toCSSClass();
       }
     }
-    
     if(opts.visible) { selector += ":visible"; }
     return selector += " div.tweet" + (args ? args.suffix : "");
   };

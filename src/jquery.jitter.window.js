@@ -14,7 +14,6 @@
         selector += opts.feed.className.toCSSClass();
       }
     }
-    
     if(opts.visible) { selector += ":visible"; }
     return selector += " div.tweet" + (args ? args.suffix : "");
   };
